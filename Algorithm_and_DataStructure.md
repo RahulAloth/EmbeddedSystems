@@ -85,6 +85,76 @@ After:  [10, 30, 40]
 
 
 
+## Sets and How a Single Rule Affects Efficiency
+
+A **set** is a data structure that stores values *without allowing duplicates*.  
+This one rule — *no repeated values* — has a major impact on performance.
+
+When we implement a set using an **array**, we get what is called an **array‑based set**.  
+It behaves like a normal array, but with one additional constraint:
+
+> **Before inserting a value, we must check whether it already exists.**
+
+This extra step changes the efficiency of several operations.
+
+---
+
+## Why the “No Duplicates” Rule Matters
+
+In a normal array:
+- Inserting at the end is **O(1)** (fast)
+- You don’t need to check anything before inserting
+
+But in an **array‑based set**:
+- You must **search the entire array** to ensure the value is not already present
+- Searching is **O(n)**
+
+So even if insertion itself is O(1),  
+**the duplicate check makes insertion O(n)**.
+
+This is the key idea:  
+### A single rule can change the efficiency of an entire data structure.
+
+---
+
+## Operations in an Array‑Based Set
+
+### 1. Reading — **O(1)**
+Reading by index is still constant time, just like a normal array.
+
+```c
+int x = set[3];
+```
+No change here.
+### 2. Searching — O(n)
+To check if a value exists, we must scan the array.
+```
+for (int i = 0; i < size; i++) {
+    if (set[i] == value) { ... }
+}
+
+```
+This is identical to array searching.
+### 3. Insertion — O(n)
+- This is where the big change happens.
+```
+Steps:
+    - Search entire array to ensure no duplicates → O(n)
+    - If not found, insert at the end → O(1)
+- Total = O(n) + O(1) = O(n)
+```
+- Even though insertion is normally fast,
+- the duplicate check dominates the cost.
+### 4. Deletion — O(n)
+- Deletion works the same as arrays:
+```
+- Find the element → O(n)
+- Shift elements left → O(n)
+Total worst case: O(n)
+```
+- So in short, A single rule can completely change the efficiency of a data structure.
+
+
 
 
 
