@@ -231,7 +231,19 @@ Steps:
 | Insert          | O(n)       | Must shift elements to maintain order |
 | Delete          | O(n)       | Must shift elements after removal     |
 
+### Excercise:
+- Solution is present in c code.
+- 1. Given the ordered array:
+    - 10, 20, 30, 40, 50, 60  
+    - Show the steps of binary search when searching for 50.
 
+- 2. Insert the value 35 into the ordered array above.
+    - Show the shifting process.
+
+- 3. Delete the value 20 from the array.
+    - Show the shifting process.
+-4. Compare the number of steps for linear search vs binary search
+    - when searching for 60 in an array of size 100.
 
 
 
