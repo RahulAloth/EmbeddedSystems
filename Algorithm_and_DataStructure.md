@@ -72,6 +72,16 @@ After:  [10, 30, 40]
 ```
 - Again, shifting → linear time.
 
+## Summary Table
+
+| Operation               | Speed          | Reason                     |
+|-------------------------|----------------|-----------------------------|
+| Read by index           | O(1)           | Direct memory access        |
+| Search by value         | O(n)           | Must scan each element      |
+| Insert at end           | O(1) amortized | Append without shifting     |
+| Insert at front/middle  | O(n)           | Shift elements              |
+| Delete at end           | O(1)           | Remove last element         |
+| Delete at front/middle  | O(n)           | Shift elements              |
 
 
 
