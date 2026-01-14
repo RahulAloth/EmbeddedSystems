@@ -370,5 +370,161 @@ That’s **O(log N)** behavior.
 
 ---
 
+# Speeding Up Code with Big O Notation
+
+Big O Notation gives us a mathematical way to describe how algorithms scale as the input size grows.  
+When we talk about “speeding up code,” we are really talking about **reducing the growth rate** of the algorithm’s running time.
+
+Instead of focusing on machine-specific timing (milliseconds, frames per second, CPU cycles), Big O focuses on the **shape** of the growth curve.
+
+---
+
+## Why Big O Helps Us Optimize Code
+
+When an algorithm is slow, the problem is often not the hardware — it’s the **complexity** of the algorithm itself.
+
+Big O helps us:
+
+- Identify bottlenecks  
+- Compare two algorithms objectively  
+- Predict performance as data grows  
+- Choose better data structures  
+- Avoid “slow by design” solutions  
+
+Even a powerful GPU cannot save an algorithm with poor complexity.
+
+---
+
+# Bubble Sort — A Classic Example
+
+Bubble Sort is one of the simplest sorting algorithms.  
+It repeatedly compares adjacent elements and swaps them if they are in the wrong order.
+
+### Basic idea:
+
+1. Look at two neighboring items  
+2. If they are out of order, swap them  
+3. Repeat this for the entire list  
+4. Then repeat the whole process again  
+5. Keep repeating until no swaps are needed  
+
+This simplicity makes Bubble Sort a perfect example for understanding **quadratic complexity**.
+
+---
+
+# The Efficiency of Bubble Sort
+
+Bubble Sort performs comparisons in **nested loops**:
+
+- The outer loop runs \(N\) times  
+- The inner loop also runs up to \(N\) times  
+
+This gives us:
 
 
+
+\[
+N \times N = N^2
+\]
+
+
+
+So Bubble Sort has:
+’’’
+O(N²) time complexity
+’’’
+
+This means:
+
+- If you double the input size, the work becomes **four times** larger  
+- If you multiply the input by 10, the work becomes **100 times** larger  
+
+Quadratic algorithms become slow very quickly.
+
+---
+
+# NxN — Understanding Quadratic Growth
+
+Quadratic growth means the work grows with the **square** of the input size.
+
+| Input Size (N) | Operations (N²) |
+|----------------|-----------------|
+| 10             | 100             |
+| 100            | 10,000          |
+| 1,000          | 1,000,000       |
+| 10,000         | 100,000,000     |
+
+Even small increases in N cause huge increases in work.
+
+This is why Bubble Sort is considered inefficient for large datasets.
+
+---
+
+# A Quadratic Problem
+
+Quadratic algorithms often appear when:
+
+- You use **nested loops**  
+- You compare **every element with every other element**  
+- You repeatedly scan the entire list even when most of it is already sorted  
+
+Bubble Sort does all three.
+
+This is why it is slow by design — not because of bad coding, but because of its **inherent structure**.
+
+---
+
+# A Linear Solution
+
+To understand how much better things can be, compare Bubble Sort’s \(O(N²)\) with a linear-time algorithm:
+
+’’’
+O(N)
+’’’
+
+
+Linear algorithms scale directly with input size:
+
+- Double the input → double the work  
+- 10× the input → 10× the work  
+
+Examples of linear-time operations:
+
+- Scanning a list once  
+- Finding the maximum value  
+- Counting elements  
+- Checking if an array is sorted  
+- A single pass through sensor frames or pixel buffers  
+
+### Why linear is better
+
+If you have 1,000,000 items:
+
+- A linear algorithm does **1,000,000** operations  
+- A quadratic algorithm does **1,000,000,000,000** operations (one trillion)
+
+That difference is enormous.
+
+---
+
+# Why This Matters in Real Code
+
+When optimizing real systems — like your stereo vision pipelines, CUDA kernels, or image-processing loops — the biggest speedups often come from:
+
+- Reducing nested loops  
+- Avoiding repeated passes over the same data  
+- Using divide‑and‑conquer or logarithmic structures  
+- Choosing better data structures (heaps, trees, hash maps)  
+- Moving from \(O(N²)\) to \(O(N)\) or \(O(N \log N)\)
+
+Hardware acceleration helps, but **algorithmic complexity dominates** as N grows.
+
+---
+
+# Summary
+
+- Big O describes how algorithms scale  
+- Bubble Sort is a classic **O(N²)** algorithm  
+- Quadratic growth becomes slow very quickly  
+- Linear-time algorithms scale far better  
+- Understanding Big O helps you design faster, more efficient code  
