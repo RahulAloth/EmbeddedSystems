@@ -528,3 +528,168 @@ Hardware acceleration helps, but **algorithmic complexity dominates** as N grows
 - Quadratic growth becomes slow very quickly  
 - Linear-time algorithms scale far better  
 - Understanding Big O helps you design faster, more efficient code  
+
+# Big O Scenarios
+
+When analyzing an algorithm, we often describe its performance in three different scenarios:
+
+- **Best Case**
+- **Average Case**
+- **Worst Case**
+
+These scenarios help us understand how an algorithm behaves under different types of input. Big O notation is used to express how the running time grows as the input size \(N\) increases.
+
+---
+
+## Worst-Case Scenario (Big O)
+
+The **worst-case scenario** describes the **maximum amount of work** an algorithm might ever need to perform for an input of size \(N\).
+
+It answers the question:
+
+**“How slow can this algorithm possibly get?”**
+
+Worst-case analysis is important because it:
+
+- Guarantees performance even under the most difficult conditions  
+- Helps engineers design reliable systems  
+- Protects against unexpected or adversarial inputs  
+- Provides an upper bound on running time  
+
+Big O notation **defaults to worst-case** unless otherwise specified.
+
+---
+
+## Why Worst-Case Matters
+
+Worst-case analysis ensures that an algorithm will not exceed a certain time limit, even when:
+
+- The input is arranged in the worst possible order  
+- The item being searched for does not exist  
+- Many operations collide or degrade  
+- The algorithm’s structure forces maximum work  
+
+This makes worst-case Big O essential for system design, performance guarantees, and safety-critical applications.
+
+---
+
+## Examples of Worst-Case Scenarios
+
+### Linear Search — **O(N)**
+Worst case: the target element is **not in the list**, so all N elements must be checked.
+
+### Binary Search — **O(log N)**
+Worst case: the search continues until only one element remains.
+
+### Bubble Sort — **O(N²)**
+Worst case: the list is in **reverse order**, causing maximum swaps.
+
+### Quick Sort — **O(N²)**
+Worst case: poor pivot selection (e.g., always choosing the smallest element).
+
+### Hash Table Lookup — **O(N)**
+Worst case: all keys collide into the same bucket.
+
+---
+
+## Summary
+
+- Big O describes how an algorithm scales  
+- Worst-case scenario = **maximum possible work**  
+- Big O usually refers to worst-case by default  
+- Worst-case analysis ensures predictability and reliability  
+- Examples include Bubble Sort (O(N²)), Linear Search (O(N)), and Binary Search (O(log N))
+
+---
+# Optimising for the Optimistic Scenario
+
+While Big O notation usually focuses on the **worst-case scenario**, it is also useful to understand the **optimistic (best-case) scenario**.  
+The optimistic scenario describes the **minimum amount of work** an algorithm might need to perform for an input of size \(N\).
+
+It answers the question:
+
+**“How fast can this algorithm possibly be under ideal conditions?”**
+
+---
+
+## Why the Optimistic Scenario Matters
+
+Although worst-case guarantees reliability, the optimistic scenario helps us:
+
+- Understand how an algorithm behaves with **favorable input**
+- Identify opportunities for **early exits** or **shortcuts**
+- Improve performance for **common real-world cases**
+- Design algorithms that adapt to input patterns
+- Recognize when an algorithm is unnecessarily doing extra work
+
+Optimizing for the optimistic scenario can make software feel faster in everyday use, even if the worst-case complexity remains the same.
+
+---
+
+## Examples of Optimistic Scenarios
+
+### Insertion Sort — **Best Case: O(N)**
+If the list is already sorted, Insertion Sort only performs one comparison per element.
+
+### Bubble Sort (Optimized Version) — **Best Case: O(N)**
+If no swaps occur during a pass, the algorithm can stop early.
+
+### Linear Search — **Best Case: O(1)**
+If the target element is the **first** element in the list.
+
+### Quick Sort — **Best Case: O(N log N)**
+If the pivot always splits the array into two equal halves.
+
+---
+
+## How to Optimise for the Optimistic Scenario
+
+### 1. **Early Exit Conditions**
+Stop the algorithm as soon as the goal is achieved.
+
+Example:  
+Bubble Sort can stop early if no swaps occur in a pass.
+
+### 2. **Short-Circuit Logic**
+Avoid unnecessary checks when the answer is already known.
+
+Example:  
+`if (a && b)` stops evaluating when `a` is false.
+
+### 3. **Input-Aware Algorithms**
+Design algorithms that adapt to patterns in the data.
+
+Example:  
+Insertion Sort is extremely fast on nearly sorted data.
+
+### 4. **Caching and Memoization**
+Reuse previous results when the input hasn’t changed.
+
+### 5. **Pre-Sorted or Pre-Processed Data**
+If data is already sorted or partially sorted, choose algorithms that benefit from it.
+
+---
+
+## Why Optimistic Optimization Is Useful
+
+Even though worst-case Big O remains the same, optimizing for the optimistic scenario:
+
+- Makes programs feel **snappier**  
+- Reduces unnecessary work  
+- Improves performance for **common real-world inputs**  
+- Helps algorithms degrade gracefully  
+- Enhances user experience  
+
+In many practical systems — including your stereo vision pipelines — real-world data often has structure or patterns. Leveraging these patterns can lead to significant speedups.
+
+---
+
+## Summary
+
+- The optimistic scenario describes the **best possible performance**  
+- It helps identify opportunities for early exits and shortcuts  
+- Many algorithms have dramatically better best-case performance  
+- Optimizing for optimistic scenarios improves real-world responsiveness  
+- Worst-case Big O stays the same, but practical performance improves  
+
+---
