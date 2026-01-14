@@ -1,3 +1,23 @@
+# What Is an Algorithm?
+
+An **algorithm** is simply a set of instructions for completing a specific task.  
+It doesn’t have to be related to computers—any step‑by‑step process can be called an algorithm.
+
+A fun example is preparing a bowl of cereal.  
+This everyday activity can be written as an algorithm:
+
+### Example: Cereal Preparation Algorithm
+
+1. Grab a bowl  
+2. Pour cereal into the bowl  
+3. Pour milk into the bowl  
+4. Dip the spoon into the bowl  
+5. Eat the cereal  
+
+Even simple tasks follow a sequence of steps.  
+That’s all an algorithm really is: **a clear, ordered list of actions to achieve a goal**.
+
+
 ## Arrays and Measuring Speed
 
 Writing efficient code requires understanding how data structures behave. Arrays are one of the most fundamental structures, and they give us a clear way to think about performance.
@@ -153,6 +173,66 @@ Steps:
 Total worst case: O(n)
 ```
 - So in short, A single rule can completely change the efficiency of a data structure.
+
+
+## Ordered Arrays
+
+An **ordered array** is an array in which the elements are always kept in sorted order.  
+This single rule — *the array must remain sorted* — changes the efficiency of several operations.
+
+Keeping the array sorted gives us one major advantage:
+
+> We can use **binary search**, which is much faster than linear search.
+
+But it also introduces a disadvantage:
+
+> Inserting new values becomes slower because we must place them in the correct position.
+
+Let’s explore these effects in detail.
+
+---
+
+## Searching an Ordered Array
+
+### Linear Search — **O(n)**  
+Even though the array is sorted, we can still use a simple linear scan:
+
+```c
+for (int i = 0; i < size; i++) {
+    if (arr[i] == target) return i;
+    if (arr[i] > target) break;   // early stop because array is sorted
+}
+```
+- The early stop helps, but in the worst case, it’s still O(n).
+
+### Binary Search — O(log n)
+- Binary search takes full advantage of the sorted order.
+```
+Steps:
+    - Look at the middle element
+    - If the target is smaller → search the left half
+    - If the target is larger → search the right half
+    - Repeat until found or the range becomes empty
+```
+
+- Each step cuts the search space in half.
+- This gives binary search its famous efficiency:
+- 1,000,000 elements → only ~20 steps
+- 1,000 elements → only ~10 steps
+- This is dramatically faster than linear search.
+
+## Summary Table
+
+| Operation       | Speed      | Reason                               |
+|-----------------|------------|---------------------------------------|
+| Read by index   | O(1)       | Direct memory access                  |
+| Linear search   | O(n)       | Scan elements one by one              |
+| Binary search   | O(log n)   | Halves the search space each step     |
+| Insert          | O(n)       | Must shift elements to maintain order |
+| Delete          | O(n)       | Must shift elements after removal     |
+
+
+
 
 
 
