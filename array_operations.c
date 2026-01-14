@@ -184,6 +184,39 @@ int compute_linear_binary_compare() {
 
     return 0;
 }
+
+
+// Bubble Sort function
+void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        // After each pass, the largest element moves to the end
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                // Swap elements
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int compute_bubble_sort() {
+    int data[] = {64, 34, 25, 12, 22, 11, 90};
+    int size = sizeof(data) / sizeof(data[0]);
+
+    printf("Original array: ");
+    printArray(data, size);
+
+    bubbleSort(data, size);
+
+    printf("Sorted array:   ");
+    printArray(data, size);
+
+    return 0;
+}
+
+
 int main() {
 
 
