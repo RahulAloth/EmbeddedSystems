@@ -285,5 +285,90 @@ Binary search becomes dramatically more efficient as data size increases,
 which is why **sorted arrays** are so powerful for fast lookup.
 
 
+# Algorithm Efficiency and Big O Notation
+
+Algorithm efficiency describes how the performance of an algorithm changes as the size of the input grows. Instead of using vague descriptions like “fast” or “slow,” computer scientists use a precise mathematical language called **Big O Notation**.
+
+Big O gives us a consistent way to categorize and communicate the efficiency of algorithms and data structures, independent of hardware or programming language.
+
+---
+
+## Why Big O Notation Matters
+
+Big O focuses on how an algorithm *scales* as the input size \(N\) becomes very large.  
+It describes the **upper bound** of growth, ignoring constants and small variations.
+
+Common Big O categories include:
+
+- **O(1)** — Constant time  
+- **O(N)** — Linear time  
+- **O(N²)** — Quadratic time  
+- **O(log N)** — Logarithmic time  
+- **O(N log N)** — Linearithmic time  
+
+Each category represents a different growth pattern.
+
+---
+
+## Logarithmic Time — The “Third Kind”
+
+Logarithms have nothing to do with algorithms, even though the words sound similar.  
+But logarithms appear naturally in many efficient algorithms.
+
+### What Is a Logarithm?
+
+A logarithm answers the question:
+
+**How many times can you divide something in half until only 1 remains?**
+
+This is why logarithmic time appears in algorithms that repeatedly cut the problem size down.
+
+### Big O and Logarithms
+
+When we write
+```
+O(log N)
+```
+it is shorthand for:
+```
+O(log₂ N)
+```
+
+The base of the logarithm does not matter in Big O notation because changing the base only multiplies by a constant, and Big O ignores constants.
+
+So:
+
+- log₂ N  
+- log₁₀ N  
+- ln N  
+
+all simplify to **O(log N)** in Big O notation.
+
+---
+
+## Examples of O(log N) Algorithms
+
+- **Binary search**  
+- **Balanced binary search trees** (AVL, Red‑Black Trees)  
+- **Heaps** (insert, delete-min)  
+- **Divide-and-conquer steps** inside algorithms like merge sort  
+
+These algorithms are efficient because they reduce the problem size very quickly.
+
+---
+
+## A Simple Analogy
+
+Imagine a book with 1,000 pages.  
+Instead of checking every page, you open the book in the middle:
+
+- If the page is too high, go to the left half.  
+- If it’s too low, go to the right half.  
+
+Each step cuts the remaining pages in half.  
+That’s **O(log N)** behavior.
+
+---
+
 
 
