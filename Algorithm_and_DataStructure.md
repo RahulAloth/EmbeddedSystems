@@ -246,7 +246,43 @@ Steps:
     - when searching for 60 in an array of size 100.
 
 
+## Binary Search vs Linear Search (Conceptual Graph)
 
+Below is a conceptual graph showing how the number of steps grows as the input size increases.
+```
+Steps
+^
+|                     Linear Search (O(n))
+|                     *
+|                   *
+|                 *
+|               *
+|             *
+|           *
+|         *
+|       *
+|     *
+|   *
+| *
+|-------------------------------------------------->  n
+* Binary Search (O(log n))
+*
+*
+*
+*
+*
+```
+
+### Interpretation
+- **Linear Search** grows steadily as the array gets larger.  
+  More elements → more steps → straight upward line.
+
+- **Binary Search** grows very slowly.  
+  Even huge arrays require only a few steps → curve that flattens quickly.
+
+### Key Insight
+Binary search becomes dramatically more efficient as data size increases,  
+which is why **sorted arrays** are so powerful for fast lookup.
 
 
 
