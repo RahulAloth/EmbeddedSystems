@@ -50,3 +50,37 @@ int main(void)
     toggle_GPIO();
     return 0;
 }
+
+// 2. Register‑Level C Example (No iLLD)
+#define P10_IOCR0   (*(volatile unsigned int*)0xF003B410)
+#define P10_OUT     (*(volatile unsigned int*)0xF003B404)
+#define P10_OMR     (*(volatile unsigned int*)0xF003B408)
+
+/* IOCR field for P10.2 is bits [23:20] */
+#define PC2_OUTPUT_PUSH_PULL   (0x10U << 20)
+
+void init_GPIO_registers(void)
+{
+    /* Clear PC2 bits */
+    P10_IOCR0 &= ~(0x1FU << 20);
+
+    /* Set PC2 = 0b10000 (push‑pull output) */
+    P10_IOCR0 |= PC2_OUTPUT_PUSH_PULL;
+}
+
+void toggle_GPIO_registers(void)
+{
+    while (1)
+    {
+        /* Set P10.2 high: OMR bit 2 = 1 */
+        P10_OMR = (1U << 2);
+
+        for (volatile int i = 0; i < 100000; i++);
+
+        /* Set P10.2 low: OMR bit (2 + 16) = 1 */
+        P10_OMR = (1U << (2 + 16));
+
+        for (volatile int i = 0; i < 100000; i++);
+    }
+}
+
