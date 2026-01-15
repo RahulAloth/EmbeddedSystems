@@ -489,5 +489,47 @@ All-pairs shortest path.
 Graphs are the backbone of modern computing — from Google Maps to compilers to social networks.
 
 
+# 1. Graph Jargon (Basic Terminology)
+
+Understanding graph terminology is essential before implementing or using graph algorithms.
+
+## 1.1 Vertex (Node)
+A fundamental unit of a graph.  
+Example: a city, a person, a webpage.
+
+## 1.2 Edge
+A connection between two vertices.
+
+## 1.3 Directed Edge
+A one‑way connection: A → B.
+
+## 1.4 Undirected Edge
+A two‑way connection: A — B.
+
+## 1.5 Weighted Edge
+An edge with a cost (distance, time, weight).
+
+## 1.6 Path
+A sequence of edges connecting vertices.
+
+## 1.7 Cycle
+A path that starts and ends at the same vertex.
+
+## 1.8 Degree
+Number of edges connected to a vertex.
+
+## 1.9 Connected Graph
+Every vertex is reachable from every other vertex.
+
+## 1.10 Component
+A maximally connected subgraph.
+
+---
+
+# 2. The Bare‑Bones Graph Implementation (Adjacency List)
+
+The adjacency list is the most common and efficient representation.
+
+
 
 
