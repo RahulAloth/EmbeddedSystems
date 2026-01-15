@@ -59,8 +59,15 @@ int peek_() {
     return queue[front];
 }
 
+int fibonacci(int n) {
+    if (n == 0) return 0;      // Base case 1
+    if (n == 1) return 1;      // Base case 2
+    return fibonacci(n - 1) + fibonacci(n - 2);  // Recursive step
+}
 
 int main() {
+    int n = 6;
+    
     push(10);
     push(20);
     push(30);
@@ -78,6 +85,10 @@ int main() {
     printf("Dequeued: %d\n", dequeue());
     printf("Front after dequeue: %d\n", peek_());
 
+    printf("Fibonacci(%d) = %d\n", n, fibonacci(n));
     return 0;
     return 0;
 }
+
+
+
