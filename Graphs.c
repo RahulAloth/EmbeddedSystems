@@ -331,3 +331,70 @@ int main() {
     return 0;
 }
 
+
+
+// ## 2.1 C Implementation (Adjacency List)
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int vertex;
+    struct Node* next;
+} Node;
+
+typedef struct Graph {
+    int V;
+    Node** adjList;
+} Graph;
+
+Node* createNode(int v) {
+    Node* newNode = malloc(sizeof(Node));
+    newNode->vertex = v;
+    newNode->next = NULL;
+    return newNode;
+}
+
+Graph* createGraph(int V) {
+    Graph* graph = malloc(sizeof(Graph));
+    graph->V = V;
+
+    graph->adjList = malloc(V * sizeof(Node*));
+    for (int i = 0; i < V; i++)
+        graph->adjList[i] = NULL;
+
+    return graph;
+}
+
+void addEdge(Graph* graph, int src, int dest) {
+    Node* newNode = createNode(dest);
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    newNode = createNode(src);
+    newNode->next = graph->adjList[dest];
+    graph->adjList[dest] = newNode;
+}
+
+void printGraph(Graph* graph) {
+    for (int i = 0; i < graph->V; i++) {
+        Node* temp = graph->adjList[i];
+        printf("Vertex %d: ", i);
+        while (temp) {
+            printf("%d -> ", temp->vertex);
+            temp = temp->next;
+        }
+        printf("NULL\n");
+    }
+}
+
+int main() {
+    Graph* graph = createGraph(5);
+
+    addEdge(graph, 0, 1);
+    addEdge(graph, 0, 4);
+    addEdge(graph, 1, 2);
+
+    printGraph(graph);
+    return 0;
+}
+
