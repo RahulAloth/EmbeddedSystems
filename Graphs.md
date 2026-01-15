@@ -579,6 +579,59 @@ Weights represent:
     - All‑pairs shortest path
 # Dijkstra’s Algorithm (Shortest Path in Weighted Graphs)
 - Works only when all weights are non‑negative.
+
+# Dijkstra’s Algorithm – Pseudocode
+
+Given:
+- A weighted graph G with non‑negative edge weights
+- A source vertex `s`
+
+Goal:
+- Find the shortest distance from `s` to every other vertex
+
+---
+```
+## Pseudocode
+
+Dijkstra(G, s):
+
+    for each vertex v in G:
+        dist[v] ← ∞
+        visited[v] ← false
+
+    dist[s] ← 0
+
+    repeat |V| times:
+        u ← vertex with minimum dist[u] among all unvisited vertices
+        visited[u] ← true
+
+        for each neighbor v of u:
+            if visited[v] = false:
+                if dist[u] + weight(u, v) < dist[v]:
+                    dist[v] ← dist[u] + weight(u, v)
+
+    return dist[]
+```
+
+---
+```
+## Explanation of Key Steps
+
+1. Initialize all distances to infinity  
+2. Set the source distance to 0  
+3. Repeatedly pick the unvisited vertex with the smallest distance  
+4. Relax all edges from that vertex  
+5. Mark the vertex as visited  
+6. Continue until all vertices are processed
+```
+---
+
+## Output
+
+dist[v] gives the shortest distance from source `s` to vertex `v`.
+
+
+
 - All Samples are given in Graph.c file. There are many things we can talk about graph but we are stopping here.
 
 
