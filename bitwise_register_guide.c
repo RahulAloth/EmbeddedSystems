@@ -183,9 +183,131 @@ void inline_assembly_example(void)
     printf("inline_assembly_example: executed NOP (if supported).\n");
 }
 
+// 🧩 1. Atomic Bit Operations (Without RMW Hazards)
+// Many MCUs provide atomic SET/CLR registers to avoid read‑modify‑write hazards.
+#define GPIO_OUT      (*(volatile uint32_t*)0x40020000)
+#define GPIO_OUT_SET  (*(volatile uint32_t*)0x40020004)
+#define GPIO_OUT_CLR  (*(volatile uint32_t*)0x40020008)
+
+void atomic_set_pin(uint8_t pin)
+{
+    GPIO_OUT_SET = (1U << pin);   // atomic set
+}
+
+void atomic_clear_pin(uint8_t pin)
+{
+    GPIO_OUT_CLR = (1U << pin);   // atomic clear
+}
+
+// 🧩 2. Bit‑Banding (ARM Cortex‑M3/M4/M7)
+// Bit‑banding maps each bit to a 32‑bit alias address.
+#define BITBAND_SRAM_REF   0x20000000
+#define BITBAND_SRAM_ALIAS 0x22000000
+
+#define BITBAND_SRAM(addr, bit) \
+    ((volatile uint32_t*)(BITBAND_SRAM_ALIAS + ((addr - BITBAND_SRAM_REF) * 32) + (bit * 4)))
+
+volatile uint32_t flag = 0;
+
+void set_flag(void)
+{
+    *BITBAND_SRAM((uint32_t)&flag, 0) = 1;   // atomic bit set
+}
+
+void clear_flag(void)
+{
+    *BITBAND_SRAM((uint32_t)&flag, 0) = 0;   // atomic bit clear
+}
+
+//🧩 3. Read‑Modify‑Write Hazard Example
+// ❌ Unsafe (ISR can overwrite changes)
+void unsafe_set_bit(void)
+{
+    REG = REG | (1U << 5);   // RMW hazard
+}
+
+
+// ✔️ Safe (interrupts masked briefly)
+void safe_set_bit(void)
+{
+    __disable_irq();
+    REG |= (1U << 5);
+    __enable_irq();
+}
+
+
+// 🧩 4. Memory Barriers (ARM)
+// Example: Ensuring writes reach peripherals before continuing
+static inline void memory_barrier(void)
+{
+    __asm__ volatile ("dmb");   // Data Memory Barrier
+}
+
+void write_to_peripheral(void)
+{
+    PERIPH_REG = 0x1234;
+    memory_barrier();           // ensure write completes
+}
+
+// 🧩 5. Peripheral Clock Gating
+// Example: Enabling a peripheral clock before register access
+#define RCC_APB2ENR   (*(volatile uint32_t*)0x40021018)
+#define USART1_EN     (1U << 14)
+
+void enable_usart1_clock(void)
+{
+    RCC_APB2ENR |= USART1_EN;   // enable clock
+}
+
+
+// 🧩 6. Interrupt‑Safe Register Access
+// Example: Protecting a shared register
+volatile uint32_t SHARED_REG = 0;
+
+void update_shared_reg(uint32_t mask)
+{
+    __disable_irq();
+    SHARED_REG |= mask;   // safe RMW
+    __enable_irq();
+}
+
+// 🧩 7. Cache & Write‑Buffer Effects
+// Example: Cleaning cache before DMA reads memory
+void prepare_dma_buffer(void *buf, size_t size)
+{
+    SCB_CleanDCache_by_Addr((uint32_t*)buf, size);
+    __asm__ volatile ("dmb");   // ensure clean completes
+}
+// Example: Invalidating cache after DMA writes memory
+void read_dma_buffer(void *buf, size_t size)
+{
+    SCB_InvalidateDCache_by_Addr((uint32_t*)buf, size);
+    __asm__ volatile ("dmb");
+}
+// 🧩 8. Endianness in Peripheral Registers
+// Example: Reading a 32‑bit register byte‑by‑byte
+volatile uint32_t REG32 = 0x11223344;
+
+void read_bytes(void)
+{
+    uint8_t *p = (uint8_t*)&REG32;
+
+    // On little-endian ARM:
+    // p[0] = 0x44
+    // p[1] = 0x33
+    // p[2] = 0x22
+    // p[3] = 0x11
+}
+// Example: Avoiding endian‑dependent code
+uint32_t read_register(void)
+{
+    return REG32;   // safe, endian‑independent
+}
+
 /* ------------------------------------------------------------------------- */
 /* main(): run all examples                                                  */
 /* ------------------------------------------------------------------------- */
+
 
 int main(void)
 {
