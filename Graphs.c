@@ -398,3 +398,54 @@ int main() {
     return 0;
 }
 
+// Adjacency Matrix + Methods
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Graph {
+    int V;
+    int** matrix;
+
+    void (*addEdge)(struct Graph*, int, int);
+    void (*print)(struct Graph*);
+} Graph;
+
+void addEdge(Graph* g, int src, int dest) {
+    g->matrix[src][dest] = 1;
+    g->matrix[dest][src] = 1;
+}
+
+void printGraph(Graph* g) {
+    for (int i = 0; i < g->V; i++) {
+        for (int j = 0; j < g->V; j++)
+            printf("%d ", g->matrix[i][j]);
+        printf("\n");
+    }
+}
+
+Graph* createGraph(int V) {
+    Graph* g = malloc(sizeof(Graph));
+    g->V = V;
+
+    g->matrix = malloc(V * sizeof(int*));
+    for (int i = 0; i < V; i++)
+        g->matrix[i] = calloc(V, sizeof(int));
+
+    g->addEdge = addEdge;
+    g->print = printGraph;
+
+    return g;
+}
+
+int main() {
+    Graph* g = createGraph(4);
+
+    g->addEdge(g, 0, 1);
+    g->addEdge(g, 0, 2);
+    g->addEdge(g, 1, 3);
+
+    g->print(g);
+    return 0;
+}
+
