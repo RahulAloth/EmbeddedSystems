@@ -530,6 +530,56 @@ A maximally connected subgraph.
 
 The adjacency list is the most common and efficient representation.
 
+# 4. Graph Search
+
+- Graph search means exploring all reachable nodes from a starting point.
+
+- Two fundamental algorithms:
+    - DFS (Depth First Search)
+    - BFS (Breadth First Search)
+ 
+# 5. Depth First Search (DFS)
+
+- DFS explores as deep as possible before backtracking.
+
+# - 6. Breadth First Search (BFS)
+
+- BFS explores level by level, like ripples in water.
+
+# 7. Efficiency of Graph Search
+
+- Both DFS and BFS run in:
+  ```
+O(V+E)
+Where:
+    V = number of vertices
+    E = number of edges
+```
+
+This is optimal because every vertex and edge must be inspected at least once.
+# 8. Weighted Graphs
+
+A weighted graph assigns a cost to each edge:
+```
+A --5--> B
+A --2--> C
+C --1--> B
+Weights represent:
+    - Distance
+    - Time
+    - Cost
+```
+
+# 9. The Shortest Path Problem
+
+- Given a weighted graph, find the minimum‑cost path between two nodes.
+## 9.1 Types of shortest path problems
+    - Single‑source shortest path
+    - Single‑pair shortest path
+    - All‑pairs shortest path
+# Dijkstra’s Algorithm (Shortest Path in Weighted Graphs)
+- Works only when all weights are non‑negative.
+- All Samples are given in Graph.c file. There are many things we can talk about graph but we are stopping here.
 
 
 
