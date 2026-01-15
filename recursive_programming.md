@@ -19,6 +19,98 @@ This note focuses on:
   - Anagram generation and its efficiency  
 
 ---
+# Recursively Recurse with Recursion
+
+## Introduction
+
+Recursion is a key concept in computer science.  
+It allows a function to **call itself** to solve a problem.  
+This idea unlocks many advanced algorithms such as:
+
+- Tree traversal  
+- Graph search  
+- Divide and conquer  
+- Dynamic programming  
+- Backtracking (mazes, Sudoku, N‑Queens)
+
+Recursion is powerful because many problems can be broken into **smaller versions of themselves**.
+
+---
+
+# Recurse Instead of Loop
+
+Many tasks that use loops can also be solved using recursion.  
+The difference is in *how* repetition is expressed.
+
+### Loop Mindset  
+“Repeat this block of code until the condition becomes false.”
+
+### Recursive Mindset  
+“Break the problem into a smaller version of itself, and let the function handle the rest.”
+
+---
+
+# Example: Factorial (n!)
+
+Factorial is defined as:
+
+
+
+```
+n! = n \cdot (n-1) \cdot (n-2) \cdots 1
+
+```
+
+
+---
+
+## Factorial Using a Loop
+
+```c
+int factorial_loop(int n) {
+    int result = 1;
+    for (int i = 1; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+```
+
+## Factorial Using Recursion
+
+```
+int factorial_recursive(int n) {
+    if (n == 0) {
+        return 1;   // Base case
+    }
+    return n * factorial_recursive(n - 1);  // Recursive step
+}
+```
+## Recursion in the Eyes of a Computer
+
+- When a function calls itself, the computer uses the call stack.
+- Each function call gets its own stack frame containing:
+    - Parameters
+    - Local variables
+    - Return address
+Example: factorial_recursive(3)
+Call stack grows:
+
+```
+factorial(3)
+  factorial(2)
+    factorial(1)
+      factorial(0)
+```
+## Infinite Recursion
+
+- If a recursive function never reaches its base case, it calls itself forever.
+Example:
+```
+void infinite() {
+    infinite();   // No base case
+}
+```
 
 ## 1. Recursive Category: Repeatedly Execute
 
