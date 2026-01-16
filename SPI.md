@@ -222,3 +222,14 @@ uint8_t spi_read_reg(uint8_t reg)
     -  Multi‑master
     -  Many devices without many CS pins
     -  Hot‑plugging or bus arbitration
+
+# 20. Look at the example.
+- How to adapt this to real TC49xx code
+    - Replace module names and registers
+        - QSPI0, GLOBALCON, DATAENTRY, RXEXIT, STATUS → use the exact names from your TC49xx header files.
+    - Use iLLD where it makes sense
+        - You can wrap IfxQspi_SpiMaster from iLLD instead of touching registers directly, but this skeleton is good for understanding.
+    - Configure CPOL/CPHA and baudrate
+        - Set them in the BACON/GLOBALCON1 fields according to your slave’s SPI mode.
+    - Wire CS either via QSPI hardware CS or GPIO
+        - Here I used a GPIO CS for clarity; you can also use QSPI’s own CS lines.
