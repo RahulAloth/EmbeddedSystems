@@ -194,3 +194,25 @@ Averaging reduces noise and stabilizes readings.
 ### 11.2 Start conversion
 ```c
 ADC->CR |= ADC_CR_START;
+```
+### 11.3 Wait for completion
+```c
+while (!(ADC->SR & ADC_SR_EOC));
+```
+### 11.4 Read result
+```c
+uint16_t value = ADC->DR;
+```
+### 11.5 Convert to voltage
+```c
+float voltage = (value / 4095.0f) * 3.3f;
+```
+## 12. ADC Use Cases
+    - Temperature sensors (NTC, RTD, thermistors)
+    - Light sensors (LDR, photodiodes)
+    - Pressure sensors
+    - Microphones (audio ADC)
+    - Battery voltage monitoring
+    - Motor control feedback
+    - Touchscreens
+    - Current sensing (shunt resistor + amplifier)
