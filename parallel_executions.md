@@ -295,3 +295,388 @@ For **real-time robotics**:
 # 8. One-Sentence Strategy
 
 > Use **SIMD on Jetson’s CPUs** for low-latency, small/medium parallel work, and **SIMT on the GPU** for massive, throughput-heavy workloads—then stitch them together with smart data movement and clear ownership of each stage.
+
+# Parallelism & Performance  
+*How modern CPUs and GPUs achieve speed on Jetson platforms*
+
+Parallelism is the foundation of performance in modern computing.  
+Jetson devices combine **CPU parallelism**, **GPU parallelism**, and **memory-level parallelism** to achieve high throughput for robotics, vision, and deep learning.
+
+This guide explains the major forms of parallelism and how they impact performance.
+
+---
+
+# 1. Types of Parallelism
+
+## 1.1 Instruction-Level Parallelism (ILP)
+- Parallelism **inside a single thread**
+- CPU executes multiple independent instructions at once
+- Enabled by:
+  - Out-of-order execution  
+  - Register renaming  
+  - Speculative execution  
+  - Superscalar decode (2–4 instructions per cycle)
+
+### Jetson CPUs
+- A57/A72: moderate ILP  
+- Carmel (Xavier): large OoO window  
+- A78AE (Orin): very high ILP + advanced branch prediction  
+
+**Best for:**  
+Control loops, SLAM front-ends, state estimation, robotics logic.
+
+---
+
+## 1.2 Data-Level Parallelism (DLP)
+- Same operation applied to many data elements
+- Two major forms:
+  - **SIMD** (CPU NEON)
+  - **SIMT** (GPU CUDA)
+
+### SIMD (CPU)
+- Vector lanes (e.g., 128-bit NEON)
+- Great for:
+  - Small filters  
+  - Vector math  
+  - Preprocessing  
+
+### SIMT (GPU)
+- Thousands of threads in warps
+- Great for:
+  - Deep learning  
+  - Stereo vision  
+  - Dense optical flow  
+  - Point clouds  
+
+---
+
+## 1.3 Thread-Level Parallelism (TLP)
+- Running multiple threads concurrently
+- CPU: a few heavyweight threads  
+- GPU: thousands of lightweight threads  
+
+### CPU TLP
+- Good for ROS2 executors, SLAM pipelines, planning
+
+### GPU TLP
+- Good for per-pixel, per-voxel, per-point workloads
+
+---
+
+## 1.4 Task-Level Parallelism
+- Different tasks run concurrently
+- Example Jetson pipeline:
+  - CPU: control loop  
+  - GPU: inference  
+  - DLA: secondary model  
+  - PVA: optical flow  
+
+This is where Jetson shines: **heterogeneous parallelism**.
+
+---
+
+# 2. How Parallelism Improves Performance
+
+## 2.1 Latency vs Throughput
+- **Latency**: time to finish one task  
+- **Throughput**: tasks per second  
+
+### CPU
+- Optimized for **low latency**
+- Deep pipelines, branch prediction, ILP
+
+### GPU
+- Optimized for **high throughput**
+- SIMT, warp scheduling, massive parallelism
+
+---
+
+## 2.2 Hiding Latency
+GPUs hide memory latency by:
+- Running many warps  
+- Switching warps when one stalls  
+- Using shared memory to reduce DRAM access  
+
+CPUs hide latency by:
+- Out-of-order
+# Parallelism & Performance  
+## CUDA-Style Parallelism, Warp Scheduling, Memory Coalescing, Bottleneck Analysis, and Roofline Reasoning
+
+Modern NVIDIA GPUs (including all Jetson devices) achieve performance through a combination of **massive parallelism**, **warp-level execution**, **high-bandwidth memory access**, and **latency hiding**.  
+This section explains the core concepts that determine CUDA performance.
+
+---
+
+# 1. CUDA-Style Parallelism (SIMT)
+
+CUDA uses **SIMT — Single Instruction, Multiple Threads**.
+
+- Threads are organized into **warps** (32 threads)
+- Warps are grouped into **thread blocks**
+- Blocks are scheduled onto **Streaming Multiprocessors (SMs)**
+
+### Key idea
+> Each thread has its own registers and control flow, but warps execute instructions in lockstep.
+
+### Benefits
+- Scales to thousands of threads  
+- Ideal for per-pixel, per-voxel, per-point workloads  
+- Hides memory latency by switching between warps  
+
+### Jetson context
+- Nano: Maxwell SMs  
+- TX2: Pascal SMs  
+- Xavier: Volta SMs  
+- Orin: Ampere SMs with Tensor Cores  
+
+---
+
+# 2. Warp Scheduling
+
+A **warp** = 32 threads executing the same instruction.
+
+### How scheduling works
+- Each SM has multiple warp schedulers
+- When one warp stalls (e.g., waiting for memory), the scheduler picks another ready warp
+- This **hides latency** without needing ILP or branch prediction
+
+### Warp divergence
+If threads in a warp take different branches:
+- The warp executes each branch path **serially**
+- Performance drops
+
+### Best practices
+- Keep threads in a warp doing similar work  
+- Avoid divergent `if/else` inside warps  
+- Use predication or warp-level primitives when possible  
+
+---
+
+# 3. Memory Coalescing
+
+Memory coalescing is the process of combining multiple thread memory accesses into **one large, aligned transaction**.
+
+### Coalesced access
+- Thread 0 → address X  
+- Thread 1 → address X+4  
+- Thread 2 → address X+8  
+- …  
+- Thread 31 → address X+124  
+
+→ GPU performs **one 128-byte transaction**.
+
+### Uncoalesced access
+- Strided or random access  
+- Each thread loads from a distant address  
+- GPU performs **many small transactions**  
+- DRAM bandwidth is wasted  
+
+### Best practices
+- Use **Structure of Arrays (SoA)** instead of AoS  
+- Ensure thread index maps to contiguous memory  
+- Use shared memory to reorganize data when needed  
+
+---
+
+# 4. Bottleneck Analysis
+
+Performance is limited by one of the following:
+
+## 4.1 Compute-bound
+- ALUs/Tensor Cores are saturated  
+- Memory bandwidth is underutilized  
+- Solution:
+  - Increase arithmetic intensity  
+  - Use Tensor Cores (FP16/INT8)  
+  - Unroll loops  
+
+## 4.2 Memory-bound
+- DRAM bandwidth is saturated  
+- ALUs are idle  
+- Solution:
+  - Improve coalescing  
+  - Use shared memory  
+  - Reduce memory traffic  
+  - Use vectorized loads (`float4`, `int4`)  
+
+## 4.3 Latency-bound
+- Too few active warps  
+- Scheduler cannot hide latency  
+- Solution:
+  - Increase occupancy  
+  - Reduce register usage  
+  - Reduce shared memory per block  
+
+## 4.4 Divergence-bound
+- Warps serialize due to branching  
+- Solution:
+  - Avoid divergent branches  
+  - Use warp-level primitives  
+
+---
+
+# 5. Roofline Model Reasoning
+
+The **Roofline Model** helps determine whether a kernel is:
+
+- **Compute-bound** (limited by FLOPs)
+- **Memory-bound** (limited by bandwidth)
+
+It uses two key metrics:
+
+### 1. Peak compute throughput  
+Measured in FLOPs/s (or Tensor Core TOPS)
+
+### 2. Peak memory bandwidth  
+Measured in GB/s
+
+### 3. Arithmetic Intensity (AI)
+
+
+\[
+AI = \frac{\text{FLOPs}}{\text{Bytes loaded from memory}}
+\]
+
+
+
+### Interpretation
+- If AI is low → memory-bound  
+- If AI is high → compute-bound  
+
+### Jetson example
+- Jetson Orin has extremely high compute (Tensor Cores)  
+- But DRAM bandwidth is limited compared to desktop GPUs  
+→ Many kernels become **memory-bound** unless optimized for coalescing and shared memory.
+
+### How to use the roofline model
+1. Estimate FLOPs of your kernel  
+2. Estimate bytes transferred  
+3. Compute AI  
+4. Compare AI to the “ridge point” (bandwidth/compute intersection)  
+5. Optimize accordingly  
+
+---
+
+# 6. Summary
+
+- **CUDA-style parallelism** uses thousands of threads organized into warps and blocks.  
+- **Warp scheduling** hides latency by switching between ready warps.  
+- **Memory coalescing** is essential for achieving peak DRAM bandwidth.  
+- **Bottleneck analysis** identifies whether a kernel is compute-, memory-, latency-, or divergence-bound.  
+- **Roofline reasoning** provides a structured way to understand performance limits and optimization priorities.
+
+Together, these concepts form the foundation of **GPU performance engineering on Jetson**.
+
+
+# Parallelism & Performance  
+## Pointer Aliasing, Memory Layout, Cache-Friendly Structures, Concurrency, Lock-Free Concepts, and Bit Manipulation
+
+High-performance systems programming depends not only on algorithms but also on how data is laid out, how memory is accessed, and how threads interact.  
+This section covers six foundational concepts that directly influence performance on CPUs and GPUs.
+
+---
+
+# 1. Pointer Aliasing
+
+Pointer aliasing occurs when **two or more pointers refer to the same memory location**.
+
+### Why it matters
+Compilers cannot safely reorder or optimize loads/stores if they suspect aliasing.  
+This prevents:
+- Vectorization  
+- Instruction reordering  
+- Load/store elimination  
+
+### Example
+```c
+void foo(float* a, float* b) {
+    *a = *a + 1;
+    *b = *a + 2;   // Compiler must assume a and b may alias
+}
+```
+## How to avoid aliasing penalties
+    - Use restrict keyword (C99)
+    - Use separate arrays (SoA)
+    - Avoid passing overlapping pointers
+    - Prefer references in C++ when aliasing is impossible
+
+## 2. Memory Layout
+
+- Memory layout determines how data is arranged in memory.
+- Two common patterns
+- Structure of Arrays (SoA)
+- x[N], y[N], z[N]
+- Great for SIMD/SIMT
+- Coalesced GPU access
+- Cache-friendly for linear scans
+``` C
+  struct Point { float x, y, z; };
+Point pts[N];
+```
+
+- Great for object-oriented code
+- Poor for vectorization
+- Often uncoalesced on GPUs
+
+- Jetson rule of thumb
+    - Use SoA for GPU kernels
+    - Use AoS only when semantics require it
+
+## 3. Cache-Friendly Data Structures
+
+- Modern CPUs rely heavily on caches.
+- Cache-friendly structures:
+    - Minimize cache misses
+    - Maximize spatial locality
+    - Enable prefetching
+- Good patterns
+    - Contiguous arrays
+    - Small structs
+    - Tight loops over linear memory
+    - Avoid pointer-chasing (linked lists, trees)
+- Bad patterns
+    - Linked lists
+    - Hash tables with poor locality
+    - Large structs with unused fields
+- Techniques
+    - Use padding to avoid false sharing
+    - Use struct-of-arrays for vectorization
+    - Use blocking/tiling for matrix operations
+##  4. Concurrency
+- Concurrency is about multiple tasks making progress, not necessarily in parallel.
+- Key concepts
+    - Threads
+    - Tasks/futures
+    - Mutexes
+    - Condition variables
+    - Atomic operations
+- Performance considerations
+    - Avoid oversubscription
+    - Pin threads to cores for real-time robotics
+    - Minimize lock contention
+    - Use lock-free structures when possible
+- Jetson context
+    - CPU handles control loops and ROS2 executors
+    - GPU handles heavy parallel work
+    - Concurrency is essential for overlapping CPU/GPU tasks
+- 5. Lock-Free Concepts
+- Lock-free programming uses atomic operations instead of mutexes.
+- Benefits
+    - No blocking
+    - No priority inversion
+    - Better real-time behavior
+    - Scales better under contention
+- Common primitives
+    - std::atomic<T>
+    - Compare-and-swap (CAS)
+    - Fetch-add
+    - Memory ordering (memory_order_relaxed, etc.)
+- Lock-free patterns
+    - Ring buffers
+    - Work queues
+    - Reference counters
+    - Hazard pointers / RCU (advanced)
+- When to use
+    - High-frequency producer/consumer
+    - Real-time robotics loops
+    - Logging, telemetry, sensor pipelines
