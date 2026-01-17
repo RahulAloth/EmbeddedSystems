@@ -591,6 +591,186 @@ Each TCB contains:
 - Preemption occurs when a higher‑priority task becomes ready  
 
 
+# RTOS Ready Lists, Queues, and Scheduler Flow  
+### (ASCII Diagram)
+
+This diagram shows how an RTOS organizes tasks internally and how the scheduler selects the next task to run.
+
+```
++=====================================================================+
+|                         RTOS TASK MANAGEMENT                        |
++=====================================================================+
+
++------------------+
+|   INTERRUPT /    |
+|   SysTick Tick   |
++---------+--------+
+|
+v
++------------------+
+|   Scheduler      |
+| (Priority Scan)  |
++---------+--------+
+|
+v
++---------------------------------------------------------------------+
+|                         READY LISTS (PER PRIORITY)                  |
+|   Highest priority at top. Scheduler picks first non-empty list.    |
++---------------------------------------------------------------------+
+
+Priority 7  →  [T7A] → [T7B] → Ø
+Priority 6  →  [T6A] → Ø
+Priority 5  →  Ø
+Priority 4  →  [T4A] → [T4B] → Ø
+Priority 3  →  [T3A] → Ø
+Priority 2  →  Ø
+Priority 1  →  [T1A] → Ø
+Priority 0  →  [Idle] → Ø
+
+Scheduler selects → T7A (highest ready)
+
++---------------------------------------------------------------------+
+|                         BLOCKED / WAIT QUEUES                       |
+|   Tasks waiting for events, semaphores, mutexes, or messages.       |
++---------------------------------------------------------------------+
+
+Event Queue (e.g., semaphore)
+[T4B] → [T3A] → Ø
+
+Message Queue
+[T6A] → Ø
+
+Mutex Wait Queue
+[T7B] → Ø
+
++---------------------------------------------------------------------+
+|                         DELAY / TIMER LIST                          |
+|   Tasks sleeping for a timeout (vTaskDelay, sleep, delayUntil).     |
++---------------------------------------------------------------------+
+
+Delay List (sorted by wake-up time)
+[T1A] (10 ms) → [T4A] (25 ms) → Ø
+
+When timeout expires → task moves to READY LIST (its priority bucket)
+
++=====================================================================+
+|                         SCHEDULER FLOW DIAGRAM                      |
++=====================================================================+
+
++---------------------------+
+|   SysTick Interrupt       |
+|   or Event Occurs         |
++-------------+-------------+
+|
+v
++---------------------------+
+|   Update Delay List       |
+|   Move expired tasks →    |
+|   READY LIST              |
++-------------+-------------+
+|
+v
++---------------------------+
+|   Check Event Queues      |
+|   Unblock tasks waiting   |
+|   for semaphores, etc.    |
++-------------+-------------+
+|
+v
++---------------------------+
+|   Priority Scan           |
+|   (Find highest ready)    |
++-------------+-------------+
+|
+v
++---------------------------+
+|   Compare with current    |
+|   running task priority   |
++-------------+-------------+
+|
++-------------+-------------+
+|   Preempt if needed       |
+|   (PendSV triggers        |
+|    context switch)        |
++-------------+-------------+
+|
+v
++---------------------------+
+|   Load next task’s PSP    |
+|   Restore CPU registers   |
++-------------+-------------+
+|
+v
++---------------------------+
+|   Task Runs (Thread Mode) |
++---------------------------+
+
++=====================================================================+
+|                         TASK STATE TRANSITIONS                      |
++=====================================================================+
+
++-----------+     Event/Timeout     +-----------+
+|  Running  | --------------------> |  Ready    |
++-----------+                       +-----------+
+|                                   ^
+| Block (wait for event)            |
+v                                   |
++-----------+     Event Occurs     +-----------+
+|  Blocked  | --------------------> |  Ready    |
++-----------+                       +-----------+
+|
+| Sleep (delay)
+v
++-----------+     Timeout          +-----------+
+|  Delayed  | --------------------> |  Ready    |
++-----------+                       +-----------+
+```
+
+
+---
+
+## Key Concepts Illustrated
+
+### **1. Ready Lists**
+- One list per priority.
+- Scheduler always picks the highest non-empty list.
+- Tasks of equal priority use round‑robin.
+
+### **2. Blocked Queues**
+Tasks waiting for:
+- Semaphores  
+- Mutexes  
+- Message queues  
+- Events  
+
+### **3. Delay List**
+- Sorted by wake-up time.
+- When timeout expires → task returns to READY list.
+
+### **4. Scheduler Flow**
+- Triggered by SysTick or an event.
+- Moves tasks between lists.
+- Performs priority scan.
+- Uses PendSV for context switching.
+
+### **5. Task State Machine**
+- Running → Blocked  
+- Blocked → Ready  
+- Ready → Running  
+- Delayed → Ready  
+
+---
+
+If you want, I can also create:
+
+- A **diagram showing PendSV context switch internals**  
+- A **diagram showing exception entry/exit register stacking**  
+- A **diagram showing full RTOS architecture (tasks, ISRs, scheduler, memory)**  
+
+Just tell me what you want to add next to your embedded‑systems library.
+
+
+
 
 If you want, I can also create:
 
