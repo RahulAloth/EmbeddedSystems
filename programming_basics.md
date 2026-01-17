@@ -544,3 +544,79 @@ Fix:
 - Understanding linker scripts is essential for debugging, optimization, and system reliability.
 
 
+# Memory Layout Diagram (Embedded Systems)
+
+Below is a conceptual diagram showing how memory is organized in a typical microcontroller  
+(Flash + RAM + peripheral space).  
+This matches the linker‑script master note you already have.
+
+
+```Text
++-------------------------------------------------------------+
+|                     FLASH / ROM (Code)                      |
+|                 (Non‑volatile, read‑only)                   |
+|                                                             |
+|  0x0800_0000  +------------------------------------------+  |
+|               |  Vector Table (Reset, IRQ handlers)      |  |
+|               +------------------------------------------+  |
+|               |  .text  (Program Instructions)           |  |
+|               +------------------------------------------+  |
+|               |  .rodata (Read‑only constants)           |  |
+|               +------------------------------------------+  |
+|               |  .data (Initial values for RAM variables)|  |
+|               |   Stored in Flash, copied to RAM       |  |
+|               +------------------------------------------+  |
+|               |  (Optional) Bootloader                   |  |
+|               +------------------------------------------+  |
+|                                                             |
++-------------------------------------------------------------+
+
++-------------------------------------------------------------+
+|                         RAM (Data)                          |
+|                     (Volatile, read/write)                  |
+|                                                             |
+|  0x2000_0000  +------------------------------------------+  |
+|               |  .data (Runtime copy of initialized vars)|  |
+|               +------------------------------------------+  |
+|               |  .bss  (Zero‑initialized variables)      |  |
+|               +------------------------------------------+  |
+|               |  Heap (grows upward ↑)                   |  |
+|               |   malloc(), new, RTOS objects            |  |
+|               +------------------------------------------+  |
+|               |                                          |  |
+|               |      Free RAM / Unused Space             |  |
+|               |                                          |  |
+|               +------------------------------------------+  |
+|               |  Stack (grows downward ↓)                |  |
+|               |   Local vars, function frames, ISRs      |  |
+|  0x2000_FFFF  +------------------------------------------+  |
+|                                                             |
++-------------------------------------------------------------+
+
++-------------------------------------------------------------+
+|                 PERIPHERAL REGISTER SPACE                   |
+|            (Memory‑mapped I/O: UART, GPIO, SPI, etc.)       |
+|                                                             |
+|  0x4000_0000  +------------------------------------------+  |
+|               |  Peripheral Registers                     |  |
+|               |  (Timers, GPIO, UART, ADC, I2C, SPI...)  |  |
+|               +------------------------------------------+  |
+|                                                             |
++-------------------------------------------------------------+
+
++-------------------------------------------------------------+
+|                 SYSTEM CONTROL SPACE (SCS)                  |
+|           (NVIC, SysTick, SCB, Debug, MPU, etc.)           |
+|                                                             |
+|  0xE000_0000  +------------------------------------------+  |
+|               |  NVIC (Interrupt Controller)              |  |
+|               +------------------------------------------+  |
+|               |  SysTick Timer                            |  |
+|               +------------------------------------------+  |
+|               |  SCB (System Control Block)               |  |
+|               +------------------------------------------+  |
+|               |  Debug / Trace Units                      |  |
+|               +------------------------------------------+  |
+|                                                             |
++-------------------------------------------------------------+
+```
