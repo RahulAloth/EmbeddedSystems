@@ -758,4 +758,117 @@ This note explains the functional role of each block in a comparative diagram of
 - CPU–GPU coherency is managed via CCN/NVLink interconnect.
 - CUDA developers must manage memory visibility using fences and shared memory.
 
+# Jetson-Specific Cache Flow  
+*A detailed overview of cache hierarchy and data movement in NVIDIA Jetson SoCs*
+
+NVIDIA Jetson modules combine ARM CPUs, NVIDIA GPUs, and dedicated accelerators into a unified SoC.  
+Understanding the cache flow is essential for optimizing memory access, ensuring coherency, and designing real-time systems.
+
+---
+
+## 1. Cache Hierarchy Overview
+
+### CPU Side (ARM Cortex-A Series)
+- **L1 Cache (per core)**  
+  - Separate instruction and data caches  
+  - Typically 2–4 way associative  
+  - Fastest access, private to each core  
+
+- **L2 Cache (shared)**  
+  - Shared across all CPU cores  
+  - Typically 8-way associative  
+  - Coherent across cores via ACE/CCI/CCN interconnect  
+
+---
+
+### GPU Side (Streaming Multiprocessors)
+- **L1 Cache (per SM)**  
+  - Unified or split with shared memory  
+  - Typically 4-way associative  
+  - Not coherent across SMs  
+  - Acts as scratchpad for CUDA kernels  
+
+- **L2 Cache (shared across GPU)**  
+  - Coherent across all SMs  
+  - Typically 16-way associative  
+  - Coherency point for CPU–GPU interactions  
+
+---
+
+## 2. Cache Flow: CPU Access
+
+1. CPU core accesses data → L1 D-Cache  
+2. If miss → L2 Cache  
+3. If L2 miss → DRAM via memory controller  
+4. Coherency maintained across cores via interconnect  
+5. DMA engines and accelerators access memory via coherent interconnect  
+
+---
+
+## 3. Cache Flow: GPU Access
+
+1. CUDA thread accesses global memory → L1 Cache (per SM)  
+2. If miss → L2 Cache (shared across SMs)  
+3. If L2 miss → DRAM  
+4. L2 Cache ensures coherency across SMs  
+5. Shared memory accesses bypass L1 and go directly to SM-local SRAM  
+
+---
+
+## 4. CPU–GPU Coherency Flow
+
+### On Jetson SoCs:
+- CPU and GPU share **physical DRAM**  
+- Coherency managed via **ARM interconnects**:
+  - CCI (Nano, TX2)  
+  - CCN (Xavier)  
+  - NVLink-like fabric (Orin)  
+
+### Flow:
+1. GPU writes to L2 → visible to CPU after flush or fence  
+2. CPU writes to L2 → visible to GPU after cache flush or barrier  
+3. Unified Memory (UM) uses page migration + faulting for consistency  
+4. Zero-copy buffers rely on hardware coherency  
+
+---
+
+## 5. Accelerator Cache Flow
+
+### NVDLA / PVA / ISP:
+- Access DRAM via coherent interconnect  
+- May use internal buffers or SRAM  
+- Rely on CPU/GPU cache flushes for visibility  
+- Typically bypass L1 caches  
+
+---
+
+## 6. Summary Diagram (Textual)
+
+```
+[CPU Core] → L1 Cache → L2 Cache → DRAM
+↑
+[Other CPU Cores] ←→ Coherent Interconnect ←→ [GPU L2 Cache] ←→ [GPU SMs] → L1 Cache
+↓
+Shared Memory / Registers
+```
+
+---
+
+## 7. Performance Tips
+
+- Use **shared memory** in CUDA for predictable latency  
+- Minimize CPU–GPU memory transfers  
+- Use **pinned memory** for DMA efficiency  
+- Use **threadfence_system()** for visibility across CPU–GPU  
+- Align memory accesses to cache line boundaries  
+
+---
+
+## 8. Key Takeaways
+
+- Jetson uses a **hierarchical cache flow** optimized for embedded AI workloads  
+- CPU and GPU share DRAM but have separate L1/L2 caches  
+- Coherency is enforced via hardware interconnects and memory fences  
+- Understanding cache flow is critical for real-time robotics, vision, and inference pipelines
+
 
