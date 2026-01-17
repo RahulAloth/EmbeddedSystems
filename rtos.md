@@ -760,29 +760,262 @@ Tasks waiting for:
 - Delayed → Ready  
 
 ---
+# PendSV Context Switch Internals (Cortex‑M)
+### Full ASCII Diagram — Hardware + RTOS + Stack Interaction
 
-If you want, I can also create:
+PendSV is the dedicated **context-switch exception** on Cortex‑M.  
+It runs at the **lowest priority**, ensuring it only executes when no other interrupt is active.
 
-- A **diagram showing PendSV context switch internals**  
-- A **diagram showing exception entry/exit register stacking**  
-- A **diagram showing full RTOS architecture (tasks, ISRs, scheduler, memory)**  
+Below is the complete internal flow.
 
-Just tell me what you want to add next to your embedded‑systems library.
+```
++=====================================================================+
+| 1. A Higher-Priority Task Becomes Ready (SysTick or Event)          |
++=====================================================================+
 
+SysTick_Handler or ISR:
+→ RTOS decides: "A higher-priority task should run"
+→ RTOS sets PendSV pending bit:
 
+ICSR.PENDSVSET = 1
 
+NVIC schedules PendSV (lowest priority exception)
 
-If you want, I can also create:
++=====================================================================+
+| 2. Exception Entry: Hardware Saves Part of Context                  |
++=====================================================================+
 
-- A **diagram showing MSP vs PSP (Cortex‑M dual stack pointers)**  
-- A **diagram showing RTOS ready lists and priority queues**  
-- A **diagram showing context switch flow (PendSV + SysTick)**  
+CPU finishes current instruction
+CPU switches to MSP (Main Stack Pointer)
+CPU automatically pushes registers onto current task’s PSP:
 
-Just tell me which one you want to add next to your embedded‑systems library.
-If you want, I can also create:
+Hardware Stacking (8 registers):
 
-- A **diagram showing TCB + stack layout per task**  
-- A **diagram showing MSP vs PSP usage in Cortex‑M**  
-- A **diagram showing RTOS ready lists, queues, and scheduler flow**  
+PSP-0x20 → +------------------------+
+| xPSR                  |
++------------------------+
+| PC (return address)   |
++------------------------+
+| LR                    |
++------------------------+
+| R12                   |
++------------------------+
+| R3                    |
++------------------------+
+| R2                    |
++------------------------+
+| R1                    |
++------------------------+
+| R0                    |
++------------------------+
 
-Just tell me which one you want next.
+PSP now points to the saved frame of the old task.
+
++=====================================================================+
+| 3. PendSV_Handler Executes (Software Context Save)                  |
++=====================================================================+
+
+PendSV_Handler runs using MSP.
+
+RTOS saves remaining registers (software stacking):
+
+Software Stacking (R4–R11):
+
+PSP-0x20 → +------------------------+
+| R11                   |
++------------------------+
+| R10                   |
++------------------------+
+| R9                    |
++------------------------+
+| R8                    |
++------------------------+
+| R7                    |
++------------------------+
+| R6                    |
++------------------------+
+| R5                    |
++------------------------+
+| R4                    |
++------------------------+
+
+RTOS updates the TCB of the old task:
+TCB[current].stack_ptr = PSP
+
+RTOS selects next task:
+next = highest_priority_ready_task()
+
+Load next task’s saved PSP:
+PSP = TCB[next].stack_ptr
+
++=====================================================================+
+| 4. PendSV Exit: Restore Context of Next Task                        |
++=====================================================================+
+
+RTOS restores R4–R11 from PSP (software unstacking):
+pop {R4–R11}
+
+On exception exit, CPU automatically restores:
+R0–R3, R12, LR, PC, xPSR
+
+CPU switches back to Thread Mode
+CPU uses PSP (Process Stack Pointer)
+Execution resumes at the new task’s PC.
+
++=====================================================================+
+| 5. New Task Begins Running                                          |
++=====================================================================+
+
+The new task continues exactly where it left off,
+with all registers restored and PSP pointing to its stack.
+```
+
+---
+
+## Key Takeaways
+
+### **Hardware does:**
+- Switch to MSP  
+- Push R0–R3, R12, LR, PC, xPSR  
+- Pop them on exit  
+
+### **RTOS does:**
+- Save R4–R11  
+- Update TCB with PSP  
+- Choose next task  
+- Restore R4–R11  
+- Set PSP to next task’s stack  
+
+### **PendSV is ideal for context switching because:**
+- Lowest priority → never interrupts real interrupts  
+- Triggered only when scheduler decides  
+- Clean separation between ISR and task-level execution  
+
+---
+
+# Full RTOS Architecture Diagram  
+### Tasks • Scheduler • Memory • Interrupts • TCB • Stacks • Queues • PendSV • SysTick
+
+Below is a complete ASCII architecture diagram showing how all RTOS components interact.
+
+```
++=====================================================================+
+|                           CPU (Cortex‑M)                            |
+|                 Fetch → Decode → Execute (Thread Mode)              |
++=====================================================================+
+
++----------------------+
+|   Running Task       |
+|   (Thread Mode, PSP) |
++----------+-----------+
+|
+v
++=====================================================================+
+|                           RTOS SCHEDULER                            |
++=====================================================================+
+
++---------------------------+       +-----------------------------+
+|   Ready Lists (per prio) |       |   Blocked / Event Queues   |
+|---------------------------|       |-----------------------------|
+| P7 → [T7A]→[T7B]→Ø        |       | Semaphores → [T4B]→Ø       |
+| P6 → [T6A]→Ø             |       | Mutex Wait → [T7B]→Ø       |
+| P5 → Ø                   |       | Msg Queue → [T3A]→Ø        |
+| P4 → [T4A]→[T4B]→Ø       |       +-----------------------------+
+| P3 → [T3A]→Ø             |
+| P2 → Ø                   |       +-----------------------------+
+| P1 → [T1A]→Ø             |       |   Delay / Timer List        |
+| P0 → [Idle]→Ø            |       | [Looks like the result wasn't safe to show. Let's switch things up and try something else!]→[Looks like the result wasn't safe to show. Let's switch things up and try something else!]→Ø   |
++---------------------------+       +-----------------------------+
+
+Scheduler chooses highest ready task → triggers PendSV if switch needed
+
++=====================================================================+
+|                           INTERRUPT SYSTEM                          |
++=====================================================================+
+
++---------------------------+       +-----------------------------+
+| SysTick Interrupt         |       | External Interrupts (NVIC) |
+|---------------------------|       |-----------------------------|
+| - Generates RTOS tick     |       | - GPIO, UART, SPI, I2C     |
+| - Updates delay list      |       | - Timers, ADC, DMA         |
+| - Moves tasks to READY    |       | - Wake blocked tasks        |
+| - Requests PendSV         |       | - May cause preemption      |
++---------------------------+       +-----------------------------+
+
+SysTick → Scheduler → PendSV → Context Switch
+
++=====================================================================+
+|                       PENDSV CONTEXT SWITCH                         |
++=====================================================================+
+
++---------------------------+       +-----------------------------+
+| Hardware Stacking         |       | Software Stacking (RTOS)   |
+|---------------------------|       |-----------------------------|
+| Push R0–R3, R12, LR, PC,  |       | Push R4–R11 onto PSP       |
+| xPSR onto PSP             |       | Update TCB[old].SP         |
++---------------------------+       +-----------------------------+
+
++---------------------------+       +-----------------------------+
+| Scheduler Selects Next    |       | Restore Context             |
+|---------------------------|       |-----------------------------|
+| PSP = TCB[next].SP        |       | Pop R4–R11                  |
+|                           |       | Hardware pops R0–R3, etc.  |
++---------------------------+       +-----------------------------+
+
+CPU returns to Thread Mode → new task runs using PSP
+
++=====================================================================+
+|                          MEMORY ARCHITECTURE                        |
++=====================================================================+
+
++---------------------------+       +-----------------------------+
+| Flash (ROM)               |       | RAM                         |
+|---------------------------|       |-----------------------------|
+| - Vector table            |       | - TCBs for all tasks        |
+| - .text (code)            |       | - Task stacks (PSP regions) |
+| - .rodata                 |       | - Kernel objects (queues)   |
+| - .data initial values    |       | - .data, .bss               |
++---------------------------+       | - Heap (malloc/new)         |
+| - MSP (interrupt stack)     |
++-----------------------------+
+
++=====================================================================+
+|                         TASK STRUCTURE (TCB)                        |
++=====================================================================+
+
+Each task has a TCB stored in RAM:
+
+TCB {
+* Stack Pointer (PSP)
+* Stack Base & Size
+* Priority
+* Task State (Ready/Blocked/Delayed)
+* Linked-list pointers (ready list, event list)
+* CPU context metadata
+}
+
+Each task has its own stack:
+
+    Local variables
+
+    Function frames
+
+    Saved registers
+
+    ISR stacking (if using PSP)
+
++=====================================================================+
+|                         FULL EXECUTION FLOW                         |
++=====================================================================+
+```
+- Task runs in Thread Mode using PSP
+- SysTick fires → moves tasks between lists
+- Scheduler decides a new task should run
+- Scheduler sets PendSV
+- PendSV saves old task context
+- PendSV restores next task context
+- CPU resumes next task in Thread Mode
+- Interrupts may preempt tasks at any time
+- RTOS manages ready/blocked/delayed lists continuously
+
+---
