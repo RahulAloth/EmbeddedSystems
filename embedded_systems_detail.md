@@ -142,3 +142,149 @@ Most RTOS scheduling algorithms are **preemptive**, meaning:
 - However, if a lower‑priority task holds a **semaphore**, the higher‑priority task cannot proceed until the semaphore is released.  
 
 This situation can cause **priority inversion**, where a high‑priority task is indirectly blocked by a low‑priority one. The next section explores how priority inversion occurs and the strategies used to mitigate it.
+```
+Time:      0   1   2   3   4   5   6   7   8   9  10
+           |---|---|---|---|---|---|---|---|---|---|
+J1         █       ░
+J2             █ █     ░
+J3                 █     █
+J4                     ░         █ █
+
+Legend:
+█  = Task execution block
+░  = Second execution block of same task
+↑  = Release time (not shown in ASCII)
+↓  = Deadline (not shown in ASCII)
+
+```
+### Explanation of EDF Scheduling
+- Earliest Deadline First (EDF) is a dynamic scheduling algorithm used in real-time operating systems (RTOS). It selects the task with the closest deadline for execution, regardless of its priority level.
+- Key Concepts:
+    - Release Time: When a task becomes ready to execute.
+    - Deadline: The latest time by which the task must finish.
+    - Preemption: If a new task is released with an earlier deadline than the currently running task, the RTOS interrupts the current task and switches to the new one.
+- In the diagram:
+    - J1 starts at time 0, pauses, and resumes at time 5.
+    - J2 runs from time 1 to 3, then again at time 7.
+    - J3 runs at time 3 and resumes at time 6.
+    - J4 starts at time 4 and finishes at time 10.
+- Tasks are interrupted and resumed based on their deadlines, not fixed priorities. This allows EDF to adapt to changing task demands and maintain real-time guarantees.
+
+
+# 🚦 Priority Inversion in RTOS
+
+## ❗ What is Priority Inversion?
+**Priority inversion** occurs when a **low-priority task blocks a high-priority task**, preventing it from executing. This typically happens when the high-priority task tries to acquire a **semaphore** that is currently held by a lower-priority task.
+
+---
+
+## 🧠 Example 1: Simple Priority Inversion
+- **Task 1** (high priority) is delayed temporarily.
+- **Task 2** (lower priority) begins execution and acquires **semaphore S1**.
+- When Task 1 resumes, it attempts to acquire S1.
+- Since S1 is held by Task 2, **Task 1 is blocked** until Task 2 releases the semaphore.
+
+This is a straightforward case and can be resolved by allowing Task 2 to complete and release the resource.
+
+---
+
+## 🧩 Example 2: Complex Priority Inversion
+- **Task 1** (highest priority) and **Task 2** (medium priority) are delayed.
+- **Task 3** (lowest priority) starts and acquires **semaphore S1**.
+- When Task 1 resumes, it tries to acquire S1 but is blocked by Task 3.
+- However, **Task 3 cannot proceed** because Task 2 (medium priority) is now ready and preempts Task 3.
+
+This creates an **indirect block**:
+- Task 2 prevents Task 3 from releasing S1.
+- Task 1 remains blocked indefinitely, even though it has the highest priority.
+
+This scenario is more dangerous, especially in **real-time or safety-critical systems**, because the duration of the block is unpredictable.
+
+---
+
+## 🛠️ Solutions to Priority Inversion
+
+### 1. 🔒 Disabling Preemption
+- Temporarily disables task switching during critical sections.
+- Ensures that once a task enters a critical section, it cannot be interrupted.
+- Simple but **not scalable**—can reduce system responsiveness.
+
+### 2. 🧬 Priority Inheritance
+- Temporarily **raises the priority** of the task holding the semaphore to match the priority of the blocked task.
+- Allows the lower-priority task to complete its critical section faster and release the resource.
+- Once done, the task’s priority returns to its original level.
+- This is a **widely used and effective** strategy in RTOS.
+
+---
+
+## 📌 Summary
+Priority inversion can severely impact real-time performance and safety. Understanding how it occurs and applying strategies like **priority inheritance** is essential for designing robust embedded systems.
+# 🔄 Priority Inversion Example 1 (ASCII Timeline)
+
+## 🧵 Timeline Overview
+```
+
+Time:      0   1   2   3   4   5   6   7   8   9  10
+           |---|---|---|---|---|---|---|---|---|---|
+
+Task 1     [Delay] ──> [Normal] ──> [Blocked on S1] ──> [Critical] ──> [Normal] ──> [Delay]
+
+Task 2           [Normal] ──> [Takes S1] ──> [Critical] ──> [Releases S1] ──> [Normal]
+
+Legend:
+[Delay]        = Task is delayed
+[Normal]       = Non-critical execution
+[Blocked on S1]= Task is waiting for semaphore S1
+[Critical]     = Critical section (protected by S1)
+[Takes S1]     = Semaphore S1 acquired
+[Releases S1]  = Semaphore S1 released
+```
+
+# 🔄 Priority Inversion Example 2 (ASCII Timeline)
+
+## 🧵 Timeline Overview
+```
+Time:      0   1   2   3   4   5   6   7   8   9  10
+           |---|---|---|---|---|---|---|---|---|---|
+
+Task 1     [Delay] ──> [Blocked on S1] ──> [Can't Execute] ──> [Critical]
+
+Task 2     [Normal] ──> [Delay] ──> [Finish]
+
+Task 3     [Normal] ──> [Takes S1] ──> [Critical] ──> [Releases S1]
+
+Legend:
+[Delay]          = Task is delayed
+[Normal]         = Non-critical execution
+[Blocked on S1]  = Task is waiting for semaphore S1
+[Can't Execute]  = Task is blocked by medium-priority task
+[Critical]       = Critical section (protected by S1)
+[Takes S1]       = Semaphore S1 acquired
+[Releases S1]    = Semaphore S1 released
+```
+###  Explanation
+
+- This example demonstrates a complex priority inversion scenario involving three tasks:
+    - Task 1 has the highest priority.
+    - Task 2 has medium priority.
+    - Task 3 has the lowest priority.
+
+- Sequence of Events:
+    - Task 1 is delayed initially.
+    - Task 3 begins execution and acquires semaphore S1.
+    - Task 2 resumes and preempts Task 3 due to higher priority.
+    - Task 1 resumes and tries to acquire S1 but is blocked because Task 3 still holds it.
+    - Task 3 cannot finish its critical section because Task 2 keeps preempting it.
+    - Task 1 remains blocked for an unpredictable duration.
+
+#### 🔥 Problem:
+
+- Even though Task 1 has the highest priority, it is indirectly blocked by Task 2 because Task 3 (which holds the resource) cannot run. This leads to unbounded blocking time, which is dangerous in real-time systems.
+##### 🛠️ Solution Preview
+- To prevent this kind of inversion, RTOS designers use strategies like:
+    - Priority Inheritance: Temporarily boost Task 3’s priority to match Task 1’s.
+    - Disabling Preemption: Prevent interruptions during critical sections.
+- These techniques ensure that high-priority tasks are not indefinitely blocked by lower-priority ones.
+
+
+
