@@ -644,7 +644,118 @@ This provides:
 - GPU L2 is the main coherence point and uses **pseudo‑LRU**.  
 - Eviction behavior affects CUDA, VPI, TensorRT, and real‑time robotics workloads.  
 
+![CPU GPU Archiecture](/images/Cache.png)
 
+# CPU vs GPU Architecture: Block-by-Block Breakdown  
+*A detailed explanation of each architectural component*
 
+This note explains the functional role of each block in a comparative diagram of CPU and GPU architectures. It highlights how CPUs are optimized for sequential, latency-sensitive tasks, while GPUs are designed for massively parallel workloads.
+
+---
+
+## 1. CPU Architecture Blocks
+
+### 🟩 Core (Green)
+- A CPU core is a powerful, general-purpose execution unit.
+- Each core includes:
+  - ALUs (Arithmetic Logic Units)
+  - FPUs (Floating Point Units)
+  - Branch predictors
+  - Register files
+- Designed for **low-latency**, **complex control flow**, and **single-thread performance**.
+
+### 🟧 Control (Orange)
+- Manages instruction decoding, scheduling, and execution.
+- Handles out-of-order execution, speculative execution, and pipeline control.
+- Sophisticated control logic enables high IPC (Instructions Per Cycle).
+
+### 🟪 L1 Cache (Purple)
+- Split into:
+  - **L1 Instruction Cache (I-Cache)**
+  - **L1 Data Cache (D-Cache)**
+- Typically 2–4 way associative.
+- Fastest cache level, private to each core.
+- Latency: ~1–4 cycles.
+
+### 🔵 L2 Cache (Blue)
+- Shared across all CPU cores (or per cluster).
+- Larger than L1, slower (~10–20 cycles).
+- Typically 8-way associative.
+- Maintains coherency across cores via ACE/CCI/CCN interconnect.
+
+### 🔵 L3 Cache (Blue)
+- Optional in embedded systems; present in desktop/server CPUs.
+- Shared across all cores.
+- Higher capacity, slower latency (~30–50 cycles).
+- Inclusive or exclusive depending on architecture.
+
+### 🟧 DRAM (Orange)
+- Off-chip main memory.
+- Latency: ~100–200 cycles.
+- Accessed via memory controller and interconnect.
+- DRAM bandwidth is a bottleneck for memory-intensive workloads.
+
+---
+
+## 2. GPU Architecture Blocks
+
+### 🟩 GPU Cores (Green Grid)
+- Thousands of lightweight cores arranged in **Streaming Multiprocessors (SMs)**.
+- Each SM contains:
+  - CUDA cores (integer/floating point units)
+  - Tensor cores (for matrix ops)
+  - Warp schedulers
+  - Register files
+- Designed for **SIMD-style parallelism** and **high throughput**.
+
+### 🟧 Control (Orange)
+- Much simpler than CPU control logic.
+- Focuses on warp scheduling and instruction dispatch.
+- No branch prediction or speculative execution.
+- Optimized for **regular, data-parallel workloads**.
+
+### 🟪 L1 Cache (Purple)
+- Private to each SM.
+- Often configurable as **shared memory + L1 cache**.
+- Typically 4-way associative.
+- Not coherent across SMs.
+- Acts as a scratchpad for CUDA kernels.
+
+### 🔵 L2 Cache (Blue)
+- Shared across all SMs.
+- Coherent across GPU cores.
+- Typically 16-way associative.
+- Acts as the **coherency point** for CPU–GPU interactions.
+- Supports atomic operations and global memory access.
+
+### 🟧 DRAM (Orange)
+- Unified memory pool shared with CPU (on Jetson) or dedicated GDDR (on discrete GPUs).
+- Accessed via memory controller.
+- Latency: ~300–500 cycles.
+- Bandwidth: hundreds of GB/s on modern GPUs.
+
+---
+
+## 3. Architectural Contrast Summary
+
+| Feature | CPU | GPU |
+|--------|-----|-----|
+| Core Count | Few (2–16) | Many (hundreds–thousands) |
+| Core Complexity | High | Low |
+| Control Logic | Sophisticated | Lightweight |
+| L1 Cache | Private, split I/D | Private, unified/shared |
+| L2 Cache | Shared, coherent | Shared, coherent |
+| L3 Cache | Optional | Not present |
+| DRAM Access | Latency-sensitive | Bandwidth-sensitive |
+| Parallelism | Task-level | Data-level (SIMD) |
+
+---
+
+## 4. Embedded Systems Implications (Jetson Context)
+
+- Jetson CPUs use ARM cores with standard L1/L2 caches and pseudo-LRU eviction.
+- Jetson GPUs use SMs with private L1 and shared L2 caches.
+- CPU–GPU coherency is managed via CCN/NVLink interconnect.
+- CUDA developers must manage memory visibility using fences and shared memory.
 
 
