@@ -872,3 +872,160 @@ Shared Memory / Registers
 - Understanding cache flow is critical for real-time robotics, vision, and inference pipelines
 
 
+# GPU vs CPU Architecture Differences  
+*A Jetson-focused architectural comparison*
+
+CPUs and GPUs are both powerful compute engines, but they are optimized for **very different goals**.  
+CPUs prioritize **low latency** and **complex control**, while GPUs prioritize **high throughput** and **massive parallelism**.
+
+---
+
+# 1. Design Philosophy
+
+| CPU (ARM Cortex-A57/A72/Carmel/A78AE) | GPU (NVIDIA SMs on Jetson) |
+|---------------------------------------|-----------------------------|
+| Optimized for **latency**             | Optimized for **throughput** |
+| Handles complex, branching logic      | Handles simple, parallel tasks |
+| Few powerful cores                    | Many lightweight cores |
+| Large caches, deep pipelines          | High memory bandwidth, many threads |
+| Great for control loops, SLAM, OS     | Great for vision, DL, simulation |
+
+---
+
+# 2. Core Architecture
+
+## 2.1 CPU Cores
+- 2–12 cores (depending on Jetson model)
+- Each core is:
+  - Superscalar (2–4 instructions per cycle)
+  - Out-of-order
+  - Deeply pipelined
+  - Equipped with strong branch prediction
+- Large private caches (L1) + shared L2
+
+### Strengths
+- Low-latency execution  
+- Excellent at sequential logic  
+- Handles interrupts, OS tasks, robotics control  
+
+---
+
+## 2.2 GPU Streaming Multiprocessors (SMs)
+- Dozens of SMs, each with:
+  - Hundreds of ALUs
+  - Warp schedulers
+  - Shared memory
+  - High-bandwidth L2 cache
+- Executes **warps** of 32 threads in lockstep (SIMT)
+
+### Strengths
+- Massive parallelism  
+- High arithmetic throughput  
+- Ideal for per-pixel, per-voxel, per-element workloads  
+
+---
+
+# 3. Execution Model
+
+## CPU: ILP + Branch Prediction
+- Uses **Instruction-Level Parallelism (ILP)**:
+  - Out-of-order execution
+  - Register renaming
+  - Speculative execution
+- Heavy reliance on **branch prediction**
+- Designed to minimize latency per instruction
+
+### Result
+- Excellent for control-heavy code  
+- Great for robotics loops, SLAM front-ends  
+
+---
+
+## GPU: SIMT + Warp Scheduling
+- Uses **Single Instruction, Multiple Threads (SIMT)**:
+  - Thousands of threads
+  - Grouped into warps
+- No branch prediction
+- No out-of-order execution
+- Hides latency by switching between warps
+
+### Result
+- Excellent for parallel workloads  
+- Great for deep learning, image processing, point clouds  
+
+---
+
+# 4. Memory Hierarchy
+
+## CPU Memory System
+- Large L1 caches (I + D)
+- Shared L2 cache
+- Optional L3 (not on Jetson)
+- Low-latency DRAM access
+- Strong coherence model
+
+### Optimized for:
+- Small working sets  
+- Predictable access patterns  
+- Low-latency loads  
+
+---
+
+## GPU Memory System
+- Per-SM L1/shared memory
+- Large unified L2 cache
+- Very high DRAM bandwidth (LPDDR4/5)
+- Weak coherence (GPU L1s not coherent across SMs)
+
+### Optimized for:
+- Streaming large tensors  
+- High-bandwidth operations  
+- Data-parallel workloads  
+
+---
+
+# 5. Parallelism Model
+
+| CPU | GPU |
+|-----|-----|
+| ILP (parallelism inside one thread) | SIMT (parallelism across thousands of threads) |
+| Few threads, high per-thread performance | Many threads, low per-thread performance |
+| Good for branching | Branch divergence hurts performance |
+| Good for small tasks | Good for massive workloads |
+
+---
+
+# 6. Latency vs Throughput
+
+## CPU
+- Low latency per instruction  
+- Predictable timing  
+- Ideal for:
+  - Control loops  
+  - State estimation  
+  - Real-time robotics  
+
+## GPU
+- High throughput  
+- High latency per thread  
+- Ideal for:
+  - Deep learning  
+  - Dense vision  
+  - Parallel math  
+
+---
+
+# 7. Jetson-Specific Summary
+
+| Jetson Component | Best Use |
+|------------------|----------|
+| **CPU (A57/A72/Carmel/A78AE)** | SLAM, control loops, ROS2, planning |
+| **GPU (Maxwell/Pascal/Volta/Ampere)** | Inference, stereo, optical flow, point clouds |
+| **DLA** | Offloading DL inference |
+| **PVA** | Vision tasks (optical flow, feature tracking) |
+
+---
+
+# 8. One-Sentence Summary
+
+**CPUs are latency-optimized, branch-smart, ILP machines for complex logic; GPUs are throughput-optimized, massively parallel SIMT engines for large-scale data processing.*
