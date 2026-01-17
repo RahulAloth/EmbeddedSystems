@@ -145,3 +145,464 @@ Requirements:
 | SCHED_DEADLINE | EDF-based Linux scheduler |
 | RTOS Selection | Depends on footprint, determinism, licensing |
 | Many-core RTOS | Needs migration + timing analysis support |
+
+
+# RTOS Task Stack Layout Inside RAM  
+### (ASCII Diagram)
+
+Below is a conceptual diagram showing how multiple RTOS task stacks live inside RAM.  
+Each task gets its **own private stack**, and the RTOS stores each stack in RAM along with the TCB (Task Control Block).
+
+
+```Text
++-------------------------------------------------------------+
+|                         RAM (Top)                           |
+|                                                             |
+|  0x2000_FFFF  +------------------------------------------+  |
+|               |  Main Stack (MSP)                        |  |
+|               |  Used by:                                |  |
+|               |   - Reset/Startup code                   |  |
+|               |   - Interrupts (if using MSP)            |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               +------------------------------------------+  |
+|               |  Task A Stack (High Priority)            |  |
+|               |  Grows downward ↓                        |  |
+|               |  [Local vars, function frames, ISRs]     |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               +------------------------------------------+  |
+|               |  Task B Stack                            |  |
+|               |  Grows downward ↓                        |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               +------------------------------------------+  |
+|               |  Task C Stack                            |  |
+|               |  Grows downward ↓                        |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               +------------------------------------------+  |
+|               |  Idle Task Stack                         |  |
+|               |  Smallest stack in system                |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               +------------------------------------------+  |
+|               |  RTOS Kernel Objects                     |  |
+|               |  (Queues, Semaphores, Event Groups)      |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               +------------------------------------------+  |
+|               |  Heap (malloc/new, RTOS dynamic alloc)   |  |
+|               |  Grows upward ↑                          |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               |                 Free RAM                  |  |
+|               |   (must not let heap & stacks collide)    |  |
+|                                                             |
+|  0x2000_0000  +------------------------------------------+  |
+|                         RAM (Bottom)                       |
++-------------------------------------------------------------+
+```
+
+---
+
+## Key Points
+
+### **1. Each RTOS task has its own stack**
+- Allocated in RAM
+- Size defined at task creation
+- Used for:
+  - Local variables  
+  - Function calls  
+  - Interrupt context (if using PSP)  
+  - RTOS context switching  
+
+### **2. Stacks grow downward**
+- From high memory → low memory  
+- Prevents collision with heap (which grows upward)
+
+### **3. The Idle Task has the smallest stack**
+- Runs when no other task is ready  
+- Usually minimal stack usage
+
+### **4. The Main Stack (MSP) is separate**
+- Used during reset  
+- Often used by interrupts  
+- Not used by RTOS tasks (they use PSP)
+
+### **5. Heap and stacks must never collide**
+- If they do → corruption → HardFault  
+- RTOS often provides stack overflow detection
+
+---
+# RTOS Task Memory Layout  
+## Diagram: TCB + Stack Layout Per Task
+
+Below is a conceptual diagram showing how each RTOS task has:
+
+- A **TCB (Task Control Block)** stored in RAM  
+- A **dedicated stack** stored in RAM  
+- A **saved CPU context** pushed onto the stack during context switching  
+
+```
++-------------------------------------------------------------+
+|                     RAM (Task Region)                       |
++-------------------------------------------------------------+
+
+Task A (High Priority)
+----------------------
+
++----------------------+        +-----------------------------+
+|   TCB for Task A     |        |     Task A Stack (RAM)      |
+|----------------------|        |-----------------------------|
+| - Task Name          |        |  High Address (Stack Top)   |
+| - Task State         |        |  +------------------------+  |
+| - Priority           |        |  | Saved CPU Registers    |  |
+| - Stack Pointer ---> |------> |  | (R0–R12, LR, PC, xPSR) |  |
+| - Stack Base Address |        |  +------------------------+  |
+| - Stack Size         |        |  |   Local Variables      |  |
+| - CPU Context Info   |        |  +------------------------+  |
+| - RTOS Lists/Queues  |        |  |   Function Frames      |  |
++----------------------+        |  +------------------------+  |
+|  |   ISR Saved Context    |  |
+|  +------------------------+  |
+|  |                        |  |
+|  |   (Stack grows ↓)      |  |
+|  |                        |  |
+|  +------------------------+  |
+|  Low Address (Stack Base) |
++-----------------------------+
+
+Task B (Medium Priority)
+------------------------
+
++----------------------+        +-----------------------------+
+|   TCB for Task B     |        |     Task B Stack (RAM)      |
+|----------------------|        |-----------------------------|
+| - Task Name          |        |  High Address (Stack Top)   |
+| - Task State         |        |  +------------------------+  |
+| - Priority           |        |  | Saved CPU Registers    |  |
+| - Stack Pointer ---> |------> |  | (Context Switch Frame) |  |
+| - Stack Base Address |        |  +------------------------+  |
+| - Stack Size         |        |  |   Local Variables      |  |
+| - CPU Context Info   |        |  +------------------------+  |
++----------------------+        |  |   Function Frames      |  |
+|  +------------------------+  |
+|  |   ISR Saved Context    |  |
+|  +------------------------+  |
+|  |                        |  |
+|  |   (Stack grows ↓)      |  |
+|  |                        |  |
+|  +------------------------+  |
+|  Low Address (Stack Base) |
++-----------------------------+
+
+Task C (Low Priority)
+----------------------
+
++----------------------+        +-----------------------------+
+|   TCB for Task C     |        |     Task C Stack (RAM)      |
+|----------------------|        |-----------------------------|
+| - Task Name          |        |  High Address (Stack Top)   |
+| - Task State         |        |  +------------------------+  |
+| - Priority           |        |  | Saved CPU Registers    |  |
+| - Stack Pointer ---> |------> |  | (Context Switch Frame) |  |
+| - Stack Base Address |        |  +------------------------+  |
+| - Stack Size         |        |  |   Local Variables      |  |
+| - CPU Context Info   |        |  +------------------------+  |
++----------------------+        |  |   Function Frames      |  |
+|  +------------------------+  |
+|  |   ISR Saved Context    |  |
+|  +------------------------+  |
+|  |                        |  |
+|  |   (Stack grows ↓)      |  |
+|  |                        |  |
+|  +------------------------+  |
+|  Low Address (Stack Base) |
+```
+
+---
+
+## Key Concepts Illustrated
+
+### **1. Each Task Has Its Own TCB**
+Stored in RAM, containing:
+- Priority  
+- State (Ready, Running, Blocked)  
+- Stack pointer  
+- Stack base & size  
+- CPU context metadata  
+- RTOS scheduling links  
+
+### **2. Each Task Has Its Own Stack**
+Used for:
+- Local variables  
+- Function calls  
+- Interrupt context  
+- Saved CPU registers during context switch  
+
+### **3. Stack Grows Downward**
+- High address → low address  
+- Prevents collision with heap  
+
+### **4. Context Switching Saves Registers on the Stack**
+When switching tasks:
+- CPU registers (R0–R12, LR, PC, xPSR) are pushed onto the task’s stack  
+- TCB’s stack pointer is updated  
+- Next task’s stack pointer is loaded  
+- CPU restores registers from that stack  
+
+### **5. TCB Points to the Top of the Stack**
+This is how the RTOS knows where to resume execution.
+
+# Cortex‑M Stack Pointer Architecture  
+## Diagram: MSP vs PSP Usage in Cortex‑M
+
+Cortex‑M CPUs have **two stack pointers**:
+
+- **MSP (Main Stack Pointer)** — used by reset, exceptions, interrupts  
+- **PSP (Process Stack Pointer)** — used by RTOS tasks (thread mode)
+
+Below is a conceptual diagram showing how both stacks live in RAM and how the CPU switches between them.
+
+```
++-------------------------------------------------------------+
+|                         RAM (Top)                           |
+|                                                             |
+|  0x2000_FFFF  +------------------------------------------+  |
+|               |              MSP (Main Stack)            |  |
+|               |------------------------------------------|  |
+|               |  Used by:                                |  |
+|               |   - Reset handler                        |  |
+|               |   - All exceptions (HardFault, SysTick)  |  |
+|               |   - All interrupts (NVIC)                |  |
+|               |   - Boot code / startup                  |  |
+|               |                                          |  |
+|               |  (Grows downward ↓)                      |  |
+|               +------------------------------------------+  |
+|                                                             |
+|               |                 Free RAM                   |  |
+|                                                             |
+|               +------------------------------------------+  |
+|               |              PSP (Process Stack)          |  |
+|               |------------------------------------------|  |
+|               |  Used by:                                |  |
+|               |   - RTOS tasks (Thread Mode)             |  |
+|               |   - User application threads             |  |
+|               |                                          |  |
+|               |  Each task gets its own PSP region       |  |
+|               |  (Grows downward ↓)                      |  |
+|               +------------------------------------------+  |
+|                                                             |
+|  0x2000_0000  +------------------------------------------+  |
+|                         RAM (Bottom)                       |
++-------------------------------------------------------------+
+```
+
+---
+
+# How Cortex‑M Chooses MSP vs PSP
+
+## 1. After Reset
+- CPU starts in **Thread Mode**
+- Uses **MSP** by default
+- Vector table loads initial MSP value
+
+## 2. When an Exception Occurs
+- CPU **always switches to MSP**
+- Saves context on MSP
+- Runs ISR using MSP
+
+## 3. When Returning to Thread Mode
+- CPU uses **CONTROL register** to decide:
+
+# RTOS Ready Lists & Priority Queue  
+## Diagram: How an RTOS Organizes Tasks by Priority
+
+Most RTOS kernels (FreeRTOS, ERIKA, RTX, ThreadX) maintain **multiple ready lists**,  
+one list per priority level.  
+The scheduler always selects the **highest‑priority non‑empty list**.
+
+Below is a conceptual diagram.
+
+```
++-------------------------------------------------------------+
+|                     RTOS READY LISTS                        |
+|          (One linked list per priority level)               |
++-------------------------------------------------------------+
+
+Priority 7 (Highest)
++-------------------------------+
+| Ready List P7 → [T7A]→[T7B]→Ø |
++-------------------------------+
+| Tasks:                        |
+|   T7A, T7B                    |
+| Scheduler picks: T7A          |
++-------------------------------+
+
+Priority 6
++-------------------------------+
+| Ready List P6 → [T6A]→Ø       |
++-------------------------------+
+| Tasks:                        |
+|   T6A                         |
++-------------------------------+
+
+Priority 5
++-------------------------------+
+| Ready List P5 → Ø             |
++-------------------------------+
+| (No ready tasks)              |
++-------------------------------+
+
+Priority 4
++-------------------------------+
+| Ready List P4 → [T4A]→[T4B]→Ø |
++-------------------------------+
+| Tasks:                        |
+|   T4A, T4B                    |
++-------------------------------+
+
+Priority 3
++-------------------------------+
+| Ready List P3 → [T3A]→Ø       |
++-------------------------------+
+| Tasks:                        |
+|   T3A                         |
++-------------------------------+
+
+Priority 2
++-------------------------------+
+| Ready List P2 → Ø             |
++-------------------------------+
+
+Priority 1
++-------------------------------+
+| Ready List P1 → [T1A]→Ø       |
++-------------------------------+
+
+Priority 0 (Idle Task)
++-------------------------------+
+| Ready List P0 → [Idle]→Ø      |
++-------------------------------+
+```
+
+---
+
+---
+
+# How the Scheduler Chooses the Next Task
+
+
+
+---
+
+# How the Scheduler Chooses the Next Task
+
+```
+Scheduler Scan:
+P7 → non‑empty → choose T7A
+P6 → skip
+P5 → skip
+P4 → skip
+...
+P0 → idle (only if all others empty)
+```
+
+### Rules:
+- Highest priority wins  
+- If multiple tasks share the same priority → **round‑robin** within that list  
+- If a higher‑priority task becomes ready → **preemption occurs immediately**
+
+---
+
+# Visual: Priority Queue as a Stack of Lists
+
+```
+Highest Priority
+↓
++-------------+
+P7 --> | T7A → T7B   |
++-------------+
+P6 --> | T6A         |
++-------------+
+P5 --> | (empty)     |
++-------------+
+P4 --> | T4A → T4B   |
++-------------+
+P3 --> | T3A         |
++-------------+
+P2 --> | (empty)     |
++-------------+
+P1 --> | T1A         |
++-------------+
+P0 --> | Idle Task   |
++-------------+
+↑
+Lowest Priority
+```
+
+
+---
+
+# How Tasks Move Between Lists
+
+### **1. Task becomes ready**
+- Added to the tail of its priority list  
+- Example: `T4B` unblocks → appended to P4 list  
+
+### **2. Task blocks (waiting for event)**
+- Removed from ready list  
+- Moved to a **blocked list** or **delay list**
+
+### **3. Task yields**
+- Moved to end of its ready list (round‑robin)
+
+### **4. Task preempted**
+- Its context saved  
+- Next highest‑priority ready task runs  
+
+---
+
+# Where TCB Fits In
+
+Each node in the ready list is a **TCB pointer**:
+
+```
+Ready List P7:
+head → [TCB_T7A] → [TCB_T7B] → Ø
+```
+
+Each TCB contains:
+- Stack pointer  
+- Priority  
+- State  
+- Next pointer (for linked list)  
+- CPU context info  
+
+---
+
+# Summary
+
+- RTOS maintains **one ready list per priority level**  
+- Scheduler always picks the **highest non‑empty list**  
+- Tasks of equal priority use **round‑robin**  
+- TCBs form the nodes of these lists  
+- Preemption occurs when a higher‑priority task becomes ready  
+
+
+
+If you want, I can also create:
+
+- A **diagram showing MSP vs PSP (Cortex‑M dual stack pointers)**  
+- A **diagram showing RTOS ready lists and priority queues**  
+- A **diagram showing context switch flow (PendSV + SysTick)**  
+
+Just tell me which one you want to add next to your embedded‑systems library.
+If you want, I can also create:
+
+- A **diagram showing TCB + stack layout per task**  
+- A **diagram showing MSP vs PSP usage in Cortex‑M**  
+- A **diagram showing RTOS ready lists, queues, and scheduler flow**  
+
+Just tell me which one you want next.
