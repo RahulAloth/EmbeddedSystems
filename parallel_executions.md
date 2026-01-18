@@ -680,3 +680,95 @@ Point pts[N];
     - High-frequency producer/consumer
     - Real-time robotics loops
     - Logging, telemetry, sensor pipelines
+# Why Critical Sections Are Harmful on GPUs
+
+Critical sections — regions of code that only one thread may execute at a time — are fundamentally incompatible with the execution model of modern GPUs. CUDA hardware is designed for massive parallelism, where thousands of lightweight threads run concurrently. Introducing serialization through critical sections destroys this parallelism and leads to severe performance degradation.
+
+---
+
+## 1. GPU Threads Are Massively Parallel, Not Independent
+
+GPU threads are:
+- Extremely lightweight
+- Executed in groups of 32 (warps)
+- Scheduled in lockstep
+- Designed for throughput, not isolation
+
+A critical section forces threads to wait for one another, which contradicts the GPU’s SIMT execution model.
+
+---
+
+## 2. Critical Sections Cause Warp Serialization
+
+If one thread in a warp enters a critical section:
+- All 32 threads in that warp stall
+- Other warps may also stall if they need the same lock
+- The SM becomes underutilized
+
+This eliminates the GPU’s ability to hide latency through warp switching.
+
+---
+
+## 3. GPU Hardware Does Not Support OS-Level Locks
+
+GPUs do **not** support:
+- Mutexes
+- Condition variables
+- OS-managed critical sections
+- Thread preemption
+
+Any attempt to emulate these mechanisms inside a kernel leads to:
+- Deadlocks
+- Warp divergence
+- Severe performance collapse
+
+---
+
+## 4. Atomics Are the Only Safe Synchronization Primitive
+
+CUDA provides atomic operations such as:
+- `atomicAdd`
+- `atomicCAS`
+- `atomicMin`
+- `atomicExch`
+
+These are:
+- Lock-free
+- Hardware-accelerated
+- Warp- and block-safe
+
+Atomics allow limited coordination without blocking entire warps.
+
+---
+
+## 5. Critical Sections Break the GPU’s Latency-Hiding Model
+
+GPUs hide memory latency by:
+- Running many warps
+- Switching to a ready warp when one stalls
+
+A critical section forces all warps to wait for a single thread, eliminating the GPU’s primary performance mechanism.
+
+---
+
+## 6. Better Alternatives to Critical Sections
+
+Use:
+- Warp-level primitives (`__shfl_sync`, `__ballot_sync`)
+- Block-level synchronization (`__syncthreads`)
+- Lock-free algorithms (reductions, prefix sums)
+- Atomic operations for counters or shared updates
+- Data-parallel designs that avoid shared mutable state
+
+---
+
+## Summary
+
+Critical sections are harmful on GPUs because they:
+- Serialize thousands of threads
+- Stall entire warps
+- Break SIMT execution
+- Eliminate latency hiding
+- Cause deadlocks or severe slowdowns
+
+GPUs thrive on **lock-free, data-parallel algorithms**, not CPU-style mutual exclusion.
