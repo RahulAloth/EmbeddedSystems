@@ -1002,5 +1002,117 @@ D --> F[Zero-Copy Buffers Accessible by CPU/GPU/Accelerators]
     - Enables zero-copy buffers
     - Eliminates PCIe transfer overhead
 
+# Cache-Friendly Data Structures  
+*Designing data layouts that minimize cache misses and maximize throughput*
+
+A cache-friendly data structure is one that allows the CPU to access memory with **high spatial locality**, **high temporal locality**, and **predictable access patterns**.  
+Because CPUs fetch memory in cache lines (typically 64 bytes), data structures that keep related data close together perform dramatically better.
+
+---
+
+# 1. Why Cache Friendliness Matters
+
+Modern CPUs are much faster than DRAM.  
+A single cache miss can cost **100–300 cycles**, while a cache hit costs **1–4 cycles**.
+
+#### Cache-friendly structures:
+- Reduce cache misses  
+- Improve prefetching  
+- Enable SIMD vectorization  
+- Increase effective memory bandwidth  
+- Improve overall latency and throughput  
+
+#### Cache-unfriendly structures cause:
+- Random memory access  
+- Pointer chasing  
+- Frequent cache evictions  
+- Pipeline stalls  
+
+---
+
+# 2. Characteristics of Cache-Friendly Structures
+
+## 2.1 Contiguous Memory
+Data stored in arrays or SoA layouts is ideal:
+```c
+float x[N];
+```
+- This ensures:
+    - Sequential access
+    - Good spatial locality
+    - Efficient prefetching
+## 2.2 Small, Compact Elements
+- Smaller structs fit more items per cache line:
+```
+struct Small { int a; float b; };   // Good
+struct Large { int a; float b; char big[256]; }; // Bad
+```
+## 2.3 Predictable Access Patterns
+- Loops that walk linearly through memory:
+```
+for (int i = 0; i < N; i++) sum += x[i];
+```
+are extremely cache-friendly.
+
+## 2.4 Avoiding Pointer Chasing
+- Linked lists, trees, and hash tables scatter nodes across memory:
+
+ - node = node->next;   // Cache miss likely
+ - This destroys locality.
+
+# 3. Examples of Cache-Friendly Structures
+- ✔ Arrays (best)
+    - Contiguous
+    - Prefetchable
+    - SIMD-friendly
+- ✔ Structure of Arrays (SoA)
+- Ideal for vectorization and GPU coalescing:
+- float x[N], y[N], z[N];
+
+- ✔ Flat buffers
+- Used in game engines and HPC.
+- ✔ Packed structs
+- Avoid padding and unused fields.
+
+# 4. Examples of **Cache-Unfriendly Structures**
+- ✘ Linked lists
+    - Each node may be anywhere in memory.
+- ✘ Trees with heap-allocated nodes
+    - Poor spatial locality.
+- ✘ Hash tables with random access
+    - Unpredictable access patterns.
+- ✘ Large structs with unused fields
+    - Waste cache space.
+ 
+# 5. Techniques for Making Data Structures Cache-Friendly
+### 5.1 Use SoA instead of AoS ( SoA = Structure of Arrays  ) / AoS(Array of Structures)
+  - Improves SIMD and coalescing.
+### 5.2 Use tiling/blocking
+- Break large arrays into cache-sized tiles.
+### 5.3 Use contiguous buffers instead of pointers
+- Replace:
+### 5.4 Align data to cache-line boundaries
+- Avoid false sharing in multithreaded code.
+### 5.5 Use memory pools or arenas
+- Allocate many small objects contiguously.
+
+# 6. Jetson-Specific Notes
+- Jetson CPUs (A57, A72, Carmel, A78AE):
+    - Have small L1 caches
+    - Moderate L2 caches
+    - Benefit enormously from contiguous, predictable access
+- Cache-friendly structures improve:
+    - Preprocessing before CUDA kernels
+    - Sensor fusion
+    - SLAM front-ends
+    - Control loops
+    - Image processing on CPU
+# One‑sentence definition
+- SoA stores each field of a structure in its own contiguous array, enabling better cache locality, SIMD vectorization, and GPU memory coalescing.
+
+ 
+
+
+    
 
 
