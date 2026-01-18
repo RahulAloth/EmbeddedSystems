@@ -305,3 +305,54 @@ cudaFree(d_ptr);
     - Optimize for bandwidth and parallelism
 
 
+
+
+
+# Lock‑Free Concepts — Detailed Study Notes  
+*A deep dive into non‑blocking concurrency for high‑performance systems*
+
+Lock‑free programming avoids traditional locking mechanisms (mutexes, critical sections, semaphores) and instead uses atomic operations and memory‑ordering guarantees to ensure progress without blocking.  
+This is essential for real‑time systems, multi‑core CPUs, and GPUs.
+
+---
+
+# 1. What “Lock‑Free” Means
+
+A system is **lock‑free** if:
+
+> At least one thread always makes progress, even if others are paused or delayed.
+
+### Levels of non‑blocking progress
+
+| Type              | Guarantee |
+|-------------------|-----------|
+| **Wait‑free**     | Every thread makes progress in bounded time |
+| **Lock‑free**     | At least one thread always makes progress |
+| **Obstruction‑free** | A thread makes progress if it runs alone |
+
+Lock‑free is the practical middle ground for high‑performance systems.
+
+---
+
+# 2. Atomic Operations — The Foundation
+
+Lock‑free algorithms rely on **atomic read‑modify‑write** instructions.
+
+### Most important: Compare‑and‑Swap (CAS)
+
+```c
+bool atomicCAS(addr, expected, newValue);
+```
+- Meaning:
+    - If *addr == expected, replace it with newValue
+    - Otherwise, do nothing
+    - Returns success/failure
+- Other atomic operations
+    - atomicAdd
+    - atomicExch
+    - atomicMin
+    - atomicMax
+    - atomicInc
+    - atomicDec
+- Atomics allow safe concurrent updates without locks.
+- 
