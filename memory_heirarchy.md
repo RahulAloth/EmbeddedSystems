@@ -366,3 +366,264 @@ Zero-copy memory is coherent but **not automatically synchronized**.
 | Orin’s high bandwidth | Enables large models + multi-stream real-time inference |
 | Zero-copy buffers | Fastest CPU–GPU path but requires synchronization |
 
+# Memory Hierarchy, Caches, and MMU in Modern CPU Architectures
+
+Modern processors—from microcontrollers to application processors—use a layered memory hierarchy 
+to balance performance, determinism, and power efficiency. This chapter explains the structure and 
+purpose of caches, tightly coupled memory, and the Memory Management Unit (MMU), and how they work 
+together to form the memory subsystem in ARM Cortex‑A, Cortex‑R, and Cortex‑M architectures.
+
+---
+
+# 1. Why Memory Hierarchy Exists
+
+CPU cores operate at hundreds of MHz to several GHz, while external memory (DRAM) is much slower.  
+To bridge this gap, processors use a **hierarchical memory system**:
+
+- small, fast memory close to the CPU  
+- larger, slower memory farther away  
+
+This hierarchy ensures:
+- high performance  
+- predictable timing (for real‑time systems)  
+- efficient use of power and bandwidth  
+
+---
+
+# 2. Memory Hierarchy Overview
+
+A typical memory hierarchy looks like this:
+```
+CPU Core
+↓
+Registers
+↓
+L1 Cache (Instruction + Data)
+↓
+L2 Cache
+↓
+L3 Cache (optional)
+↓
+On‑chip SRAM / TCM
+↓
+External DRAM
+↓
+Flash / Storage
+```
+
+Each level trades off **speed**, **size**, and **latency**.
+
+---
+
+# 3. CPU Registers
+
+Registers are the fastest memory in the system.
+
+Characteristics:
+- single‑cycle access  
+- directly connected to ALU  
+- extremely small (tens of registers)  
+
+Registers are managed entirely by the compiler and CPU hardware.
+
+---
+
+# 4. Cache Memory
+
+Caches are small, fast memories that store recently accessed instructions and data.
+
+## 4.1 Why Caches Exist
+Caches exploit:
+- **temporal locality** (recently used data is likely to be used again)  
+- **spatial locality** (nearby data is likely to be accessed soon)  
+
+## 4.2 Cache Levels
+- **L1 Cache** – smallest, fastest, closest to CPU  
+- **L2 Cache** – larger, slower  
+- **L3 Cache** – optional, shared across cores  
+
+## 4.3 Cache Types
+- **Instruction Cache (I‑Cache)**  
+- **Data Cache (D‑Cache)**  
+- **Unified Cache** (common in L2/L3)  
+
+## 4.4 Cache Organization
+- direct‑mapped  
+- set‑associative  
+- fully associative  
+
+## 4.5 Cache Policies
+- write‑through vs write‑back  
+- write‑allocate vs no‑write‑allocate  
+- replacement policies (LRU, FIFO, random)  
+
+---
+
+# 5. Cache Coherency
+
+In multi‑core systems, caches must stay synchronized.
+
+## Coherency Protocols
+- MESI  
+- MOESI  
+- ARM ACE / CHI protocols  
+
+Cortex‑A processors use hardware coherency for SMP Linux systems.
+
+Cortex‑M and Cortex‑R typically avoid multi‑core coherency to maintain determinism.
+
+---
+
+# 6. Tightly Coupled Memory (TCM)
+
+TCM is a fast, deterministic on‑chip SRAM directly connected to the CPU.
+
+## Characteristics
+- zero‑wait‑state access  
+- bypasses caches  
+- predictable timing  
+- ideal for ISRs, control loops, safety code  
+
+TCM is heavily used in Cortex‑R and high‑end Cortex‑M systems.
+
+---
+
+# 7. Scratchpad Memory
+
+Scratchpad memory is software‑managed SRAM.
+
+Differences from TCM:
+- no automatic mapping  
+- compiler/firmware decides what goes inside  
+- used in DSPs and real‑time systems  
+
+Scratchpads offer deterministic timing without cache unpredictability.
+
+---
+
+# 8. External DRAM
+
+DRAM is large but slow.
+
+Characteristics:
+- high latency  
+- requires refresh cycles  
+- accessed through memory controllers  
+- bandwidth shared across cores and peripherals  
+
+Cortex‑A processors rely heavily on caches to hide DRAM latency.
+
+---
+
+# 9. Flash Memory
+
+Flash stores:
+- bootloaders  
+- firmware  
+- code for microcontrollers  
+
+Flash is slower than SRAM but non‑volatile.
+
+Cortex‑M often executes code directly from flash using:
+- prefetch buffers  
+- linefill buffers  
+- optional I‑cache  
+
+---
+
+# 10. Memory Management Unit (MMU)
+
+The MMU translates virtual addresses to physical addresses and enforces memory protection.
+
+## 10.1 Why MMUs Exist
+- virtual memory  
+- process isolation  
+- memory protection  
+- paging  
+- running Linux/Android  
+- supporting hypervisors  
+
+Cortex‑A processors always include an MMU.
+
+---
+
+## 10.2 MMU Components
+
+### 1. Page Tables
+Data structures that map virtual → physical addresses.
+
+### 2. TLB (Translation Lookaside Buffer)
+A cache for address translations.
+
+### 3. Access Permissions
+- read/write/execute  
+- user/kernel  
+- secure/non‑secure  
+
+### 4. Domains and Regions
+Used for memory protection and OS isolation.
+
+---
+
+## 10.3 MMU in ARMv8‑A
+
+ARMv8‑A introduces:
+- 4 KB, 16 KB, 64 KB page sizes  
+- 48‑bit virtual addressing  
+- 4‑level page tables  
+- EL0–EL3 privilege levels  
+
+This enables:
+- Linux  
+- Android  
+- hypervisors  
+- TrustZone  
+
+---
+
+# 11. MPU (Memory Protection Unit)
+
+Cortex‑M and Cortex‑R use an MPU instead of an MMU.
+
+## MPU Characteristics
+- region‑based protection  
+- no virtual memory  
+- deterministic timing  
+- simpler hardware  
+
+MPUs are ideal for real‑time systems where page faults are unacceptable.
+
+---
+
+# 12. Memory Hierarchy in Cortex‑A, Cortex‑R, Cortex‑M
+
+| Feature | Cortex‑M | Cortex‑R | Cortex‑A |
+|--------|----------|----------|----------|
+| MMU | No | Optional (R82) | Yes |
+| MPU | Yes | Yes | Optional |
+| Caches | Optional | Yes | Yes (multi‑level) |
+| TCM | Optional | Yes | Rare |
+| DRAM | Rare | Common | Always |
+| Determinism | High | Very High | Low |
+| OS Support | RTOS | RTOS | Linux/Android |
+
+---
+
+# Summary
+
+Modern processors use a layered memory hierarchy to balance speed, determinism, and flexibility.  
+Key components include:
+
+- **Registers** – fastest storage  
+- **Caches** – hide DRAM latency  
+- **TCM/SRAM** – deterministic real‑time memory  
+- **DRAM** – large but slow  
+- **Flash** – non‑volatile code storage  
+- **MMU** – virtual memory and OS support  
+- **MPU** – region‑based protection for real‑time systems  
+
+Understanding the memory hierarchy is essential for designing efficient embedded systems, 
+especially when working with ARM Cortex‑A, Cortex‑R, and Cortex‑M processors.
+
+
+
