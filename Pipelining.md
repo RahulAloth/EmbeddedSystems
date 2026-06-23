@@ -11,6 +11,7 @@ These techniques allow processors to execute more instructions per cycle, hide l
 
 ---
 
+![CPU Pipeline](./images/pope.png)
 # 1. Pipelining
 
 ## 1.1 What is Pipelining?
