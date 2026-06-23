@@ -49,7 +49,8 @@ Data: 10110101
 ECC bits: P1 P2 P3 P4 P5 P6 P7  
 Stored as:  
 10110101 | P1 P2 P3 P4 P5 P6 P7
-
+An imaginary ECC simulation is given as code here
+[ECC_Simulation](./Ecc_Simulation.cpp)
 ### Capabilities (SECDED)
 - Single‑bit error correction  
 - Double‑bit error detection  
