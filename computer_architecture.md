@@ -125,3 +125,97 @@ DSPs are hardware-optimized for real-time math.
 ## MAC Unit (Multiply-Accumulate)
 The MAC is the heart of every DSP:
 
+result = (A × B) + C
+
+
+A DSP performs this in **one cycle**, enabling fast filtering and signal processing.
+
+## FIR Filter Example
+A Finite Impulse Response (FIR) filter computes:
+
+y[n] = Σ (x[n-k] * h[k])
+
+
+This is a perfect match for MAC hardware:
+- multiply input sample by coefficient
+- accumulate result
+- repeat for each tap
+
+DSPs can compute dozens or hundreds of taps per microsecond.
+
+---
+
+# 6. Harvard vs Von Neumann Architecture
+
+## Von Neumann Architecture
+- Single memory for instructions and data
+- Single bus
+- Simpler design
+- Potential bottleneck (Von Neumann bottleneck)
+
+## Harvard Architecture
+- Separate instruction and data memories
+- Separate buses
+- Allows simultaneous fetch + data access
+- Higher throughput
+
+DSPs almost always use Harvard architecture.
+
+ARM can be:
+- Von Neumann (older ARM7)
+- Modified Harvard (ARM9, Cortex-M)
+- Full Harvard (Cortex-R)
+
+---
+
+# 7. DSP Pipeline (Diagram-Rich Explanation)
+
+A DSP pipeline is optimized for **streaming data** and **deterministic timing**.
+
+## Typical DSP Pipeline Stages
+1. **Fetch** – instruction fetch
+2. **Decode** – decode + operand fetch
+3. **Address Generation** – circular/modulo addressing
+4. **Execute** – ALU + MAC operations
+5. **Write Back** – store results
+
+## ASCII Pipeline Diagram
+
+---------+    +---------+    +----------------+    +---------+    +-------------+
+|  Fetch  | -> | Decode  | -> | Addr Gen Unit  | -> |  Exec   | -> | Write Back |
++---------+    +---------+    +----------------+    +---------+    +-------------+
+|              |                 |                 |                |
+v              v                 v                 v                v
+Instr Mem     Register File     Address Logic        ALU/MAC         Data Mem
+
+
+## Why DSP Pipelines Are Different
+- They include **address generation units (AGUs)** for circular buffers
+- They support **dual data fetch** (two operands per cycle)
+- They have **dedicated MAC datapaths**
+- They avoid branch penalties using **zero-overhead loops**
+
+DSP pipelines are built for **predictable, high-throughput math**.
+
+---
+
+# Summary
+
+This chapter introduced the evolution from general-purpose CPU design to specialized compute 
+architectures:
+
+- **General-purpose CPU** → flexible, control-heavy workloads  
+- **ARM (RISC)** → efficient, low-power embedded compute  
+- **DSP** → real-time math and signal processing  
+- **GPU** → massive parallelism  
+- **NPU** → neural network acceleration  
+
+It also covered:
+- MAC units  
+- FIR filters  
+- Harvard vs Von Neumann  
+- DSP pipeline internals  
+
+These concepts form the foundation for understanding modern embedded SoCs.
+
+
