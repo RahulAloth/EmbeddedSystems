@@ -52,7 +52,7 @@ Stored as:
 
 An imaginary ECC simulation is given as code here
 
-[ECC_Simulation](./Ecc_Simulation.cpp)
+[ECC_Simulation](./Ecc_Simulation.c)
 
 ### Capabilities (SECDED)
 - Single‑bit error correction  
