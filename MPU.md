@@ -221,7 +221,207 @@ Choose an MPU when you need:
 MPUs are the backbone of advanced embedded computing.
 
 ---
+# Renesas R‑Car Automotive MPU Architecture – Deep Dive
 
-## Next Step
+Renesas **R‑Car** is a family of high‑performance automotive MPUs designed for infotainment, digital clusters, ADAS perception, and AI edge processing. Unlike MCUs, R‑Car devices integrate multi‑core CPUs, GPUs, ISPs, AI accelerators, and high‑bandwidth interfaces to support complex automotive software stacks such as Linux, Android Automotive, QNX, and AUTOSAR Adaptive.
 
-The next page will cover **MCU vs MPU – Silicon-Level Comparison**, showing architectural differences, memory models, timing behavior, and use-case boundaries.
+---
+
+## 1. Overview of R‑Car Architecture
+
+R‑Car MPUs are built for:
+
+- High‑performance computing  
+- Rich graphics and multimedia  
+- AI/ML acceleration  
+- Multi‑camera processing  
+- Automotive networking  
+- Functional safety (ASIL‑B/D variants)  
+- Domain separation via hypervisors  
+
+They serve as the “brain” of modern automotive infotainment and ADAS systems.
+
+---
+
+## 2. CPU Architecture
+
+R‑Car devices use **ARM Cortex‑A** multi‑core processors:
+
+- Dual, quad, or octa‑core Cortex‑A  
+- Out‑of‑order execution  
+- Large L1/L2 caches  
+- Optional L3 cache in high‑end variants  
+- NEON SIMD acceleration  
+- Virtualization support  
+
+### Memory Management Unit (MMU)
+- Enables virtual memory  
+- Required for Linux/QNX  
+- Supports process isolation and hypervisors  
+
+---
+
+## 3. GPU & Graphics Subsystem
+
+R‑Car integrates powerful GPUs for automotive displays:
+
+- 2D/3D graphics acceleration  
+- OpenGL ES / Vulkan support  
+- Multi‑display pipelines  
+- Hardware composition engine  
+- Support for digital clusters and IVI systems  
+
+Used for:
+
+- Instrument clusters  
+- Infotainment UIs  
+- Heads‑up displays (HUD)  
+
+---
+
+## 4. Image Signal Processor (ISP)
+
+R‑Car includes advanced ISPs for camera processing:
+
+- Multi‑camera input  
+- HDR processing  
+- Noise reduction  
+- Lens distortion correction  
+- Object detection pre‑processing  
+
+Essential for:
+
+- Surround‑view systems  
+- Driver monitoring  
+- ADAS perception  
+
+---
+
+## 5. AI / Machine Learning Accelerators
+
+High‑end R‑Car devices include dedicated AI blocks:
+
+- CNN accelerators  
+- Hardware matrix engines  
+- Low‑latency inference  
+- Optimized for automotive neural networks  
+
+Used for:
+
+- Object detection  
+- Lane recognition  
+- Driver monitoring  
+- Sensor fusion  
+
+---
+
+## 6. Memory Subsystem
+
+R‑Car relies on **external DDR**:
+
+- DDR3 / DDR4 / LPDDR4 / LPDDR5  
+- High bandwidth for multimedia and AI  
+- Requires careful PCB routing (length matching, impedance control)
+
+### Storage Interfaces
+- eMMC  
+- UFS  
+- SDIO  
+- SPI NOR/NAND  
+
+Used for OS images, file systems, and application data.
+
+---
+
+## 7. Internal Interconnect (NoC)
+
+R‑Car uses a **Network‑on‑Chip (NoC)** architecture:
+
+- AXI/ACE interconnect  
+- Multi‑master, multi‑slave fabric  
+- Cache coherency across cores  
+- High throughput for camera and GPU pipelines  
+
+This enables parallel processing of graphics, AI, and multimedia workloads.
+
+---
+
+## 8. Automotive Communication Interfaces
+
+R‑Car supports automotive networking:
+
+- **CAN / CAN FD**  
+- **LIN**  
+- **Ethernet AVB / TSN**  
+- **FlexRay** (in some variants)  
+- **PCIe** for external accelerators  
+- **USB 3.x** for peripherals  
+
+These interfaces allow integration with vehicle ECUs and sensors.
+
+---
+
+## 9. Safety Architecture (ASIL‑B/D)
+
+R‑Car includes functional safety features:
+
+- Lockstep safety cores (in ASIL variants)  
+- ECC on memories  
+- Safety watchdogs  
+- Error detection and reporting  
+- Hardware partitioning  
+- Safety island (independent monitoring core)
+
+Used in:
+
+- Digital clusters  
+- ADAS domain controllers  
+- Safety‑critical perception systems  
+
+---
+
+## 10. Hypervisor & Domain Separation
+
+R‑Car supports virtualization:
+
+- Multiple OS domains  
+- Secure separation between infotainment and safety domains  
+- AUTOSAR Adaptive + Linux running simultaneously  
+- Hardware-assisted virtualization  
+
+This enables mixed‑criticality systems.
+
+---
+
+## 11. Typical R‑Car Applications
+
+R‑Car powers:
+
+- Infotainment (IVI) systems  
+- Digital instrument clusters  
+- Surround‑view camera systems  
+- Driver monitoring systems  
+- ADAS perception units  
+- AI edge inference  
+- Automotive gateways  
+
+Anywhere high performance and multimedia/AI processing are required, R‑Car dominates.
+
+---
+
+## 12. Why Choose R‑Car?
+
+Choose R‑Car when you need:
+
+- High-performance multi‑core processing  
+- Rich graphics and multi‑display support  
+- AI/ML acceleration  
+- Multi‑camera pipelines  
+- Automotive networking  
+- Functional safety  
+- Hypervisor-based domain separation  
+
+R‑Car is the backbone of modern automotive computing platforms.
+
+---
+
