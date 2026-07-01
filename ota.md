@@ -154,15 +154,6 @@ R‑Car is the platform where **TrustZone is essential**.
 | Flash Swap | Dual-bank | Dual-bank | A/B partitions |
 | Use Case | Zonal, safety | Zonal, body/chassis | Central HPC |
 
----
-
-# 🧠 FAE Interview‑Ready Explanation
-
-> “OTA requires secure boot, cryptographic verification, A/B partitioning, and rollback.  
-> Infineon AURIX and Renesas RH850 use HSM/TSIP for secure firmware OTA.  
-> Renesas R‑Car uses ARM TrustZone to isolate secure OTA validation from the main OS, enabling full OS updates for SDVs.”
-
----
 
 # 📄 Final Notes
 
