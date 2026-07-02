@@ -80,6 +80,7 @@ Drivers control hardware devices.
 - Storage driver  
 
 ### Driver Location by OS Type
+
 | OS Type | Driver Location |
 |--------|------------------|
 | Monolithic (Linux/Android) | Inside kernel |
@@ -104,6 +105,8 @@ These sit on top of HAL, drivers, and the kernel.
 ---
 
 # 🧩 Full Android OS Architecture
+
+```
 +-------------------------------------------+
 | Apps (Chrome, WhatsApp, Maps)             |
 +-------------------------------------------+
@@ -122,10 +125,12 @@ These sit on top of HAL, drivers, and the kernel.
 +-------------------------------------------+
 | Hardware                                  |
 +-------------------------------------------+
+```
 
 ---
 
 # 📊 Summary Table
+
 
 | OS Part | Role | Android Example |
 |---------|------|------------------|
@@ -139,15 +144,8 @@ These sit on top of HAL, drivers, and the kernel.
 
 ---
 
-# 🧠 Interview‑Ready Explanation
+# 🔗 Guided Links for deeper exploration
 
-> “An OS consists of the kernel, system libraries, system services, HAL, drivers, and user-space frameworks.  
-> Android uses the Linux monolithic kernel, with HAL layers and Binder IPC to provide hardware abstraction and app isolation.  
-> Microkernel OSes like QNX move drivers and services outside the kernel for safety, while Linux keeps them inside for performance.”
-
----
-
-# 🔗 Guided Links for deeper exploration  
 - [Kernel architecture](ca://s?q=Explain_kernel_architecture)  
 - [Microkernel vs Monolithic](ca://s?q=Explain_microkernel_vs_monolithic)  
 - [Android kernel architecture](ca://s?q=Explain_Android_kernel_architecture)  
