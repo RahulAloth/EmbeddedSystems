@@ -143,12 +143,3 @@ These sit on top of HAL, drivers, and the kernel.
 | **Apps** | User programs | WhatsApp, Chrome |
 
 ---
-
-# 🔗 Guided Links for deeper exploration
-
-- [Kernel architecture](ca://s?q=Explain_kernel_architecture)  
-- [Microkernel vs Monolithic](ca://s?q=Explain_microkernel_vs_monolithic)  
-- [Android kernel architecture](ca://s?q=Explain_Android_kernel_architecture)  
-- [Operating system components](ca://s?q=Explain_operating_system_components)
-
-
