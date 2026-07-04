@@ -1,4 +1,5 @@
 # Hypervisor Types Explained
+<img width="834" height="527" alt="image" src="https://github.com/user-attachments/assets/332fe05e-8fff-4ac5-a87b-2d93bbfe2441" />
 
 Virtualization systems are built on hypervisors—software layers that allow multiple operating systems to run on the same hardware. Hypervisors come in several types, each designed for different performance, isolation, and deployment needs.
 
