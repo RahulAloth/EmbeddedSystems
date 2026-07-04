@@ -499,4 +499,94 @@ Hypervisor runs **after** secure boot and enforces isolation between VMs.
 - Supports **real-time mixed-criticality workloads**  
 
 
+# How a Hypervisor Enables **Freedom From Interference (FFI)**  
+*(ISO 26262 + Mixed‑Criticality Automotive Systems)*
 
+## 1. **CPU Isolation**
+Hypervisors enforce strict separation of CPU execution:
+- Dedicated cores for ASIL‑D workloads  
+- Non‑critical IVI apps on separate cores  
+- Deterministic scheduling (no starvation, no overruns)
+
+This prevents **timing interference** between safety‑critical and non‑critical domains.
+
+---
+
+## 2. **Memory Isolation**
+Hypervisors configure hardware memory protection:
+- MMU + Stage‑2 translation (ARM SMMU / x86 EPT)  
+- Non‑overlapping physical memory regions  
+- No writable shared memory unless explicitly allowed  
+
+A faulty or malicious VM **cannot corrupt** another VM’s memory.
+
+---
+
+## 3. **Device Isolation**
+Using IOMMU, hypervisors ensure:
+- Each VM gets only its assigned peripherals  
+- DMA cannot access another VM’s memory  
+- Drivers in one VM cannot interfere with others  
+
+This blocks **DMA‑based interference**, which bypasses OS‑level protection.
+
+---
+
+## 4. **Interrupt Isolation**
+Hypervisors control interrupt routing:
+- Assign interrupts to specific VMs  
+- Prioritize safety‑critical interrupts  
+- Prevent interrupt storms from affecting ASIL‑D tasks  
+
+This ensures **predictable interrupt behavior**.
+
+---
+
+## 5. **Timing Isolation**
+Hypervisors enforce deterministic time behavior:
+- Fixed time slices  
+- Priority‑based scheduling  
+- CPU budget enforcement  
+
+This guarantees **predictable execution**, required for ASIL‑D.
+
+---
+
+## 6. **Fault Containment**
+If a non‑critical VM crashes:
+- Safety‑critical VM continues running  
+- Hypervisor logs and isolates the fault  
+- No propagation of failure  
+
+This is essential for **mixed‑criticality systems** (ADAS + IVI).
+
+---
+
+## 7. **Security Isolation**
+Hypervisors provide strong security boundaries:
+- No privilege escalation across VMs  
+- Malware cannot cross VM boundaries  
+- Network stack isolation  
+
+Supports **ISO 21434 cybersecurity** and **ISO 26262 safety** simultaneously.
+
+---
+
+# Summary Table — Hypervisor → ISO 26262 FFI Mapping
+
+| FFI Requirement | Hypervisor Mechanism |
+|-----------------|----------------------|
+| Memory isolation | MMU + Stage‑2 translation |
+| Timing isolation | Deterministic scheduling |
+| Execution isolation | VM boundaries + core pinning |
+| Communication isolation | Virtual networks + firewalling |
+| Fault isolation | VM crash containment |
+| Resource isolation | IOMMU + device assignment |
+
+---
+
+# Mental Model  
+A hypervisor is a **hardware‑enforced wall** between software domains.  
+Safety‑critical ADAS stays protected even if IVI Linux crashes.
+
+---
