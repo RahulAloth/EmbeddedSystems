@@ -304,6 +304,7 @@ If an OS‑Application violates rules:
 ---
 
 ## 4. Structure of an OS‑Application
+```
 +-------------------------------+
 OS-Application A
 Tasks: T1, T2
@@ -320,7 +321,7 @@ Trusted Functions: TF2, TF3
 Memory Region: MR_B
 
 +-------------------------------+
-
+```
 Each OS‑Application is isolated by the **MPU**.
 
 ---
