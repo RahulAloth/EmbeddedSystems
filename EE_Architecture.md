@@ -199,6 +199,22 @@ Vehicle Functions (Apps)
 - This architecture enables OTA, software‑defined vehicles, and reduced wiring complexity.
 
 ---
+```
+            +-----------------------------+
+            |        Central HPC          |
+            |  (ADAS + IVI + Body SW)     |
+            +--------------+--------------+
+                           |
+                    Ethernet Backbone
+                           |
+    +---------+    +---------+    +---------+    +---------+
+    | Zone FL |    | Zone FR |    | Zone RL |    | Zone RR |
+    +---------+    +---------+    +---------+    +---------+
+       |              |              |              |
+   Sensors/Actuators Sensors/Actuators Sensors/Actuators Sensors/Actuators
+   Power Distribution Power Distribution Power Distribution Power Distribution
+
+```
 
 
 
