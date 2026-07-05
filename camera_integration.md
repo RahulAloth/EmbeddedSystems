@@ -113,4 +113,45 @@ Wide‑angle and fisheye lenses distort geometry:
 ---
 
 ## Full Pipeline Diagram
+```
+Camera Sensor
+│
+▼
+[MIPI-CSI Interface]
+│ RAW Bayer
+▼
+[ISP Pipeline]
+│ Demosaic, NR, CCM, Gamma
+▼
+[HDR Merge]
+│ Multi-exposure / DOL HDR
+▼
+[Dewarp Engine]
+│ Geometric correction
+▼
+[ADAS / Robotics Perception]
+│ CNNs, SLAM, Object Detection
+```
+
+---
+
+## Automotive Example (Surround View)
+
+| Stage | Purpose | Output |
+|------|---------|--------|
+| MIPI‑CSI | Capture RAW frames | RAW10 |
+| ISP | Demosaic + NR + CCM | RGB/YUV |
+| HDR | Merge exposures | HDR12 |
+| Dewarp | Fisheye → rectilinear | Rectified image |
+| Stitching | Combine 4 cameras | Bird’s‑eye view |
+| Perception | Detect lanes, objects | Metadata |
+
+---
+
+## Summary  
+- **MIPI‑CSI** brings RAW sensor data into the SoC.  
+- **ISP** converts RAW → usable image with color, noise reduction, and tuning.  
+- **HDR** handles extreme lighting using multi‑exposure or DOL frames.  
+- **Dewarp** corrects lens distortion for perception algorithms.  
+- This pipeline is foundational for ADAS, robotics, and autonomous systems.
 
