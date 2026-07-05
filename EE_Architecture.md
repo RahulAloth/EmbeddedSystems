@@ -217,4 +217,25 @@ Vehicle Functions (Apps)
 ```
 
 
+## Safety Architecture
+```
+                +-----------------------------+
+                |         Central HPC         |
+                |  (ADAS + IVI + Body SW)     |
+                |-----------------------------|
+                | Safety Island (ASIL-D)      |
+                | Global Safety Manager       |
+                +--------------+--------------+
+                               |
+                        Ethernet TSN Backbone
+                               |
+    +---------+    +---------+    +---------+    +---------+
+    | Zone FL |    | Zone FR |    | Zone RL |    | Zone RR |
+    +---------+    +---------+    +---------+    +---------+
+       |              |              |              |
+ Local Safety     Local Safety     Local Safety     Local Safety
+ (ASIL-B/QM)      (ASIL-B/QM)      (ASIL-B/QM)      (ASIL-B/QM)
+ Power Safety     Power Safety     Power Safety     Power Safety
+
+```
 
