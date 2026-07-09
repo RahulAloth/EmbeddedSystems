@@ -5,118 +5,156 @@ All About  Embedded Systems
 
 ![Embedded Systems Overview](images/Embedded-Engineering-Roadmap.png)
 
-# 📘 Algorithms & Data Structures  
-A curated collection of implementations, notes, and examples in C and Markdown.
+# 📘 Embedded Systems & Automotive Engineering Knowledge Base
 
-This repository is part of an ongoing study and documentation effort to master **core algorithms**, **data structures**, and **programming fundamentals**.  
-Each topic includes both **conceptual explanations** (`.md` files) and **practical C implementations** (`.c` files).
+A comprehensive, continuously evolving repository documenting **Embedded Systems**, **Automotive Electronics**, **Computer Architecture**, **RTOS**, **MCU/SoC internals**, **communication protocols**, and **core algorithms** with both **Markdown theory** and **C implementations**.
 
----
-
-# 📚 Index
-
-## 1. Programming Fundamentals
-- [`Programming_Fundamentals.md`](Programming_Fundamentals.md)
-
-## 2. Combined Notes
-- [`Algorithm_and_DataStructure.md`](Algorithm_and_DataStructure.md)  
-  A consolidated document covering multiple data structures and algorithms.
----
-
-## 3. Arrays
-- [`array_operations.c`](array_operations.c)
+This project serves as a long‑term technical reference, interview preparation resource, and engineering notebook.
 
 ---
 
-## 4. Linked Lists
-- [`LinkedList.md`](LinkedList.md) — Concepts, operations, diagrams  
-- [`LinkedList.c`](LinkedList.c) — Singly & doubly linked list implementations
+## 📚 Major Sections
+
+### 1. Programming & Fundamentals
+- **[Programming Fundamentals](ca://s?q=Open_Programming_Fundamentals.md)**
+- **[Programming Basics](ca://s?q=Open_programming_basics.md)**
+- **[Process](ca://s?q=Open_Process.md)**
+- **[Memory Layout](ca://s?q=Open_memory_layout.md)**
+- **[Memory Hierarchy](ca://s?q=Open_memory_heirarchy.md)**
 
 ---
 
-## 5. Stacks & Queues
-- [`stack_and_queue.md`](stack_and_queue.md) — Theory + use cases  
-- [`stack_and_queue.c`](stack_and_queue.c) — Stack & queue implementation in C
+### 2. Algorithms & Data Structures
+- **[Algorithm & Data Structure Notes](ca://s?q=Open_Algorithm_and_DataStructure.md)**
+- Arrays — [array_operations.c](ca://s?q=Open_array_operations.c)
+- Linked Lists — [LinkedList.md](ca://s?q=Open_LinkedList.md), [LinkedList.c](ca://s?q=Open_LinkedList.c)
+- Stacks & Queues — [stack_and_queue.md](ca://s?q=Open_stack_and_queue.md), [stack_and_queue.c](ca://s?q=Open_stack_and_queue.c)
+- Recursion — [recursive_programming.md](ca://s?q=Open_recursive_programming.md), [recursive_programming.c](ca://s?q=Open_recursive_programming.c)
+- Trees — [Trees.md](ca://s?q=Open_Trees.md), [trees.c](ca://s?q=Open_trees.c)
+- Graphs — [Graphs.md](ca://s?q=Open_Graphs.md), [Graphs.c](ca://s?q=Open_Graphs.c)
+- Hash Tables — [hash_tables.md](ca://s?q=Open_hash_tables.md), [hash_table.c](ca://s?q=Open_hash_table.c)
 
 ---
 
-## 6. Recursion
-- [`recursive_programming.md`](recursive_programming.md) — Explanation + examples  
-- [`recursive_programming.c`](recursive_programming.c)
+### 3. Embedded Systems Architecture
+- **[Embedded Systems Core](ca://s?q=Open_embedded_system_core.md)**
+- **[Embedded Systems Detail](ca://s?q=Open_embedded_systems_detail.md)**
+- **[Embedded Systems Interface](ca://s?q=Open_Embedded_Systems_Interface.md)**
+- **[Advanced Embedded](ca://s?q=Open_advanced_embedded.md)**
+- **[EE Architecture](ca://s?q=Open_EE_Architecture.md)**
 
 ---
 
-## 7. Trees
-- [`Trees.md`](Trees.md) — Tree basics, binary trees, BSTs  
-- [`trees.c`](trees.c) — Tree and BST implementation in C
+### 4. MCU / SoC Architecture
+- ARM Cortex Series  
+  - [Cortex‑A](ca://s?q=Open_arm_cortex_a_architecture.md)  
+  - [Cortex‑M](ca://s?q=Open_arm_cortex_m_architecture.md)  
+  - [Cortex‑R](ca://s?q=Open_arm_cortex_r_architecture.md)
+
+- **[MCU Overview](ca://s?q=Open_mcu.md)**
+- **[MPU](ca://s?q=Open_MPU.md)**
+- **[DMA](ca://s?q=Open_DMA.md)**
+- **[ADC](ca://s?q=Open_ADC.md)**
+- **[DSP Architecture](ca://s?q=Open_DSP_architecture.md)**
 
 ---
 
-## 8. Graphs
-- [`Graphs.md`](Graphs.md) — Graph theory, BFS, DFS, weighted graphs, shortest paths  
-- [`Graphs.c`](Graphs.c) — Graph implementation (adjacency list/matrix)
+### 5. Computer Architecture
+- **[Computer Architecture](ca://s?q=Open_computer_architecture.md)**
+- **[CPU Pipeline](ca://s?q=Open_cpu_pipeline.md)**
+- **[Pipeline Hazards](ca://s?q=Open_pipeline_hazards.md)**
+- **[Pipelining Summary](ca://s?q=Open_Pipelining.md)**
+- **[Memory Hierarchy](ca://s?q=Open_memory_heirarchy.md)**
 
 ---
 
-## 9. Hash Tables
-- [`hash_tables.md`](hash_tables.md) — Hashing, collisions, chaining  
-- [`hash_table.c`](hash_table.c)
+### 6. Operating Systems & Virtualization
+- **[OS Architecture](ca://s?q=Open_os_architecture.md)**
+- **[RTOS](ca://s?q=Open_rtos.md)**
+- **[RTOS Basics](ca://s?q=Open_rtos_basics.md)**
+- **[POSIX](ca://s?q=Open_posix.md)**
+- **[VM](ca://s?q=Open_VM.md)**
+- **[Hypervisor](ca://s?q=Open_Hypervisor.md)**
+- **[QNX Boot Sequence](ca://s?q=Open_qnx_boot_sequence.md)**
 
 ---
 
-## 10. License
-- [`LICENSE`](LICENSE)
+### 7. Automotive Systems
+- **[Functional Safety](ca://s?q=Open_Functional_Safety.md)**
+- **[ISO 26262](ca://s?q=Open_iso26262.md)**
+- **[Autosar Partitioning](ca://s?q=Open_autosar_partitioning.md)**
+- **[Zonal Architecture](ca://s?q=Open_zonal_architecture.md)**
+- **[IVI Architecture](ca://s?q=Open_ivi.md)**
+- **[OTA](ca://s?q=Open_ota.md)**
+- **[Parallel Executions](ca://s?q=Open_parallel_executions.md)**
+- **[Low Power Architecture](ca://s?q=Open_low_power_architecture.md)**
 
 ---
 
-# 🧠 Purpose of This Repository
+### 8. Automotive Communication Protocols
+- **[CAN](ca://s?q=Open_CAN.md)**
+- **[LIN](ca://s?q=Open_LIN.md)**
+- **[I2C](ca://s?q=Open_I2C.md)**
+- **[SPI](ca://s?q=Open_SPI.md)**
+- **[UART](ca://s?q=Open_UART.md)**
+- **[UDS](ca://s?q=Open_unified_diagnostics_services.md)**
 
-This project serves as:
-
-- A **learning journal** for mastering algorithms and data structures  
-- A **reference library** of clean, well‑documented C implementations  
-- A **teaching resource** for explaining concepts clearly  
-- A **foundation** for future advanced topics (AVL, Red‑Black Trees, Graph Algorithms, etc.)
-
----
-
-# 🚀 How to Use This Repository
-
-1. Start with **Programming_Fundamentals.md**  
-2. Move through each data structure in order  
-3. Read the `.md` file for theory  
-4. Study the `.c` file for implementation  
-5. Experiment, modify, and extend the code  
-6. Use this as a base for interview prep or academic study
+C Implementations:
+- [i2c.c](ca://s?q=Open_i2c.c)
+- [spi.c](ca://s?q=Open_spi.c)
+- [UART.c](ca://s?q=Open_UART.c)
 
 ---
 
-# 🛠️ Technologies Used
-
-- **C Programming Language**  
-- Markdown for documentation  
-- GCC / Clang for compilation  
-- Git for version control
+### 9. Graphics & Camera
+- **[Graphic Architecture Example](ca://s?q=Open_Graphic_Architecture_Example.md)**
+- **[Camera Integration](ca://s?q=Open_camera_integration.md)**
 
 ---
 
-# 📈 Future Additions (Planned)
-
-- Sorting algorithms (Bubble, Merge, Quick, Heap Sort)  
-- Advanced trees (AVL, Red‑Black Trees, Tries)  
-- Advanced graph algorithms (Dijkstra, Bellman‑Ford, Prim, Kruskal)  
-- Dynamic programming examples  
-- Memory management notes
+### 10. Performance & Build
+- **[Performance Tuning](ca://s?q=Open_performance_tuning.md)**
+- **[Build Methods](ca://s?q=Open_Build_methods.md)**
 
 ---
 
-# 🙌 Contributions
-
-This repository is primarily for personal learning, but improvements, suggestions, and discussions are always welcome.
+### 11. Safety & Diagnostics
+- **[Watchdog](ca://s?q=Open_watchdog.md)**
+- **[Ecc Simulation](ca://s?q=Open_Ecc_Simulation.c)**
 
 ---
 
-# 📬 Contact
+## 🧠 Purpose of This Repository
+This repository is designed as:
 
-For questions or collaboration, feel free to reach out.
+- A **complete embedded‑systems engineering knowledge base**
+- A **reference library** for interviews, projects, and system design
+- A **learning journal** documenting deep‑dive studies
+- A **C implementation archive** for low‑level programming
+
+---
+
+## 🚀 How to Use This Repository
+1. Start with **Programming Fundamentals**
+2. Move into **Embedded Systems Architecture**
+3. Study **MCU/SoC internals**
+4. Explore **Automotive protocols & safety**
+5. Deep dive into **OS, RTOS, Hypervisors**
+6. Use C files to understand **low‑level implementation**
+
+---
+
+## 📈 Planned Additions
+- Sorting algorithms  
+- AVL, Red‑Black Trees  
+- Advanced graph algorithms  
+- Dynamic programming  
+- Automotive Ethernet (TSN/AVB)  
+- ROS2 / Apex.OS notes  
+
+---
+
+## 📬 Contact
+For collaboration or questions, feel free to reach out.
+
 
