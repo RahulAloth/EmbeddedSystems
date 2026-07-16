@@ -18,9 +18,135 @@ CUDA (Compute Unified Device Architecture) is NVIDIA’s parallel computing plat
 - High memory bandwidth  
 - Executes many threads simultaneously  
 
+ Bus & Car Analogy
+- **CPU = Sports Car**
+  - Very fast reaction (low latency)
+  - Handles few passengers (threads)
+- **GPU = City Bus**
+  - Slower reaction (higher latency)
+  - Carries hundreds or thousands of passengers (threads)
+
+### Latency Comparison
+- CPU latency ≈ **100 ns**
+- GPU latency ≈ **500 ns** (≈ 5× slower)
+
+
+### Bandwidth Comparison
+- CPU bandwidth ≈ **50–100 GB/s**
+- GPU bandwidth ≈ **500–1000 GB/s** (≈ 10× higher)
+
+**Conclusion:**  
+CPU reacts faster, GPU moves more data.
+
 **CUDA lets you write code that uses this parallel hardware.**
 
 ---
+## 1.1. Why GPU Latency Is Higher
+
+GPUs are built for **parallel throughput**, not quick reaction:
+- Thousands of cores
+- Deep pipelines
+- Many threads queued
+- Large memory controllers
+
+This increases latency but gives huge bandwidth.
+
+## 1.2. When CPU Is Faster
+Small workloads.
+
+Example:
+- Single-thread CPU code is **150× faster** than multi-threaded CPU  
+- Single-thread CPU is **200× faster** than GPU for **512 objects**
+
+Reason:
+- GPU overhead (kernel launch + memory copy)
+- Small workloads don’t saturate GPU parallelism
+
+## 1.3. When GPU Becomes Faster
+Large workloads.
+
+- Multi-thread CPU becomes better at **64K elements**
+- GPU becomes fastest at **268M elements**
+Reason:
+- GPU bandwidth dominates
+- Thousands of threads run in parallel
+
+## Example: Temperature Simulation
+Simple iterative update:
+
+```Text
+T[n] = T[n-1] + ...
+```
+Each object cools independently → perfect for parallelization.
+
+### CPU Version
+```cpp
+std::transform(temp.begin(), temp.end(), temp.begin(), op);
+```
+### GPU Version
+- Same logic compiled with nvcc:
+    - Thousands of threads update temperatures
+    - High bandwidth → faster for large arrays
+
+## Why CPU, ARM, GPU Need Different Binaries
+- Different instruction sets:
+    - x86 → Intel/AMD
+    - ARM → ARMv8
+    - GPU → PTX/SASS
+- Compilers
+    - g++ → x86
+    - aarch64-g++ → ARM
+    - nvcc → GPU
+- Same C++ code → different machine instructions.
+
+# 2 CUDA Software Stack
+
+## CUDA Runtime
+- Manages GPU memory  
+- Launches kernels  
+- Synchronizes device  
+- Provides a unified API  
+
+## CUDA Driver
+- Interfaces directly with GPU hardware  
+- Manages GPU contexts  
+- Loads PTX/SASS machine instructions  
+
+## CUDA Libraries
+- **Thrust** – STL-like parallel algorithms for GPU  
+- **cuBLAS** – GPU‑accelerated linear algebra  
+- **cuDNN** – Deep learning primitives  
+- **libcu++** – C++ standard library for CUDA  
+- **NPP** – Image and signal processing  
+- **CUTLASS** – High‑performance GEMM kernels  
+
+---
+
+# 2.1 Heterogeneous Programming
+- CUDA separates execution spaces:
+    - Host = CPU
+    - Device = GPU
+- Example:
+  
+```cpp
+__global__ void kernel() { ... }   // GPU
+int main() { ... }                 // CPU
+```
+
+# Summary Table
+
+| Concept     | CPU               | GPU                   |
+|-------------|-------------------|------------------------|
+| Latency     | Low (100 ns)      | High (500 ns)          |
+| Bandwidth   | 50–100 GB/s       | 500–1000 GB/s          |
+| Cores       | 4–32              | 1000–20000             |
+| Best for    | Small tasks       | Massive parallel tasks |
+| Compiler    | g++               | nvcc                   |
+| Execution   | Sequential        | Parallel               |
+| Scaling     | Poor              | Excellent              |
+
+
+
 
 # 2. CUDA Programming Model
 
