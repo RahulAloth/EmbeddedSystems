@@ -821,9 +821,11 @@ Stack
 After exec:
 
 ```text
+
 Code -> ls
 Heap
 Stack
+
 ```
 
 Everything is replaced.
@@ -838,10 +840,9 @@ Example:
 
 ```c
 printf("Before Exec\n");
-
 execl("/bin/ls","ls",NULL);
-
 printf("After Exec\n");
+
 ```
 
 Output:
@@ -849,6 +850,7 @@ Output:
 ```text
 Before Exec
 (ls output)
+
 ```
 
 Never prints:
@@ -875,8 +877,6 @@ execl(
     NULL
 );
 ```
-
----
 
 ## execv()
 
@@ -963,8 +963,6 @@ Bash
         +--> exec("python")
 ```
 
----
-
 # 3. spawn()
 
 ## What Is spawn()?
@@ -974,14 +972,8 @@ Bash
 Conceptually:
 
 ```text
-spawn()
-    =
-fork()
-    +
-exec()
+spawn() = fork() +  exec()
 ```
-
----
 
 # POSIX Example
 
@@ -995,15 +987,13 @@ Prototype:
 int posix_spawn(
     pid_t *pid,
     const*char *path,
-    ...
-*;
+;
 ```
-
----
 
 # Example
 
 ```c
+
 *id_t pid;
 
 posix_spawn(
@@ -1013,6 +1003,7 @@ posix_spawn(
 *   NULL,
     argv,
     environ*);
+
 ```
 
 Immediately starts:
@@ -1021,11 +1012,9 @@ Immediately starts:
 ls
 ```
 
----
-
 # Why*spawn()?
 
-fork*) can be expensive.
+fork* can be expensive.
 
 Imagine*
 
@@ -1041,161 +1030,108 @@ fork()
 
 requires*significant kernel work.
 
-For*embedded systems:
+For embedded systems:
 
 ```text
-*ow RAM
+Low RAM
 Low CPU
-*``
+``
 
 spawn() is often better.
 
 ---
-*#*Windows Uses spawn-like*APIs
+# Windows Uses spawn-like*APIs
 
-Windows does not*use fork.
+Windows does not use fork.
 
-*nstead:
+instead:
 
 ```cpp
+
 CreateProcess()
-``*
 
-directly creates a*process.
+```
 
-*onceptually:
+directly creates a process.
+
+Conceptually:
 
 ```text
+
 spawn()
 ```
-**--
 
 # Linux vs Windows
 
 ## Linux
 
-*``text
-fork()
-    *+
-exec()
-```
+```c
+fork() +  exec()
 
-Traditional*model.
+```c
+
+Traditional model.
 
 ---
 
 ## Windows
 
-*``text
+```c
 CreateProcess()
+
 ```
 
-Single*operation.
+Single operation.
 
 ---
 
-# Comparison Tabl**
-| Feature | fork() | exec() |*spawn() |
-|----------|---------*---------|----------|
-| Creates ne* process |*Yes | No | Yes |
-| Replaces progra* image | No | Yes |*Yes |
-| New PID | Yes*| No | Yes |
-| Parent*survives | Yes | N/A | Yes*|
-| Common in Linux | Very Common * Very Common | Increasing*|
-| Common in Windows | No | No |*Similar via*CreateProcess |
+# Comparison Table
+
+| Feature | fork() | exec() | spawn() |
+|----------|------------------|----------|
+| Creates new process | Yes | No | Yes |
+| Replaces program image | No | Yes |Yes |
+| New PID | Yes | No | Yes |
+| Parent survives | Yes | N/A | Yes|
+| Common in Linux | Very Common Very Common | Increasing |
+| Common in Windows | No | No | Similar via  CreateProcess |
 
 ---
 
-# Real Kerne* View
+# Real Kernel View
 
 When running:
 
 ```bash
-gcc*main.c
+gcc main.c
+
 ```
 
-The*shell performs:
+The shell performs:
 
-*``text
+```text
 Shell Process
       |
-     *| fork()
+      | fork()
       v
-Child*Shell
+Child Shell
       |
-      |*exec()
+      | exec()
       v
-gcc Process*      |
+gcc Process      |
       | Compiling ...
-    * |
-*     v
+      |
 Exit
+
 ```
 
-Parent*shell waits*
+Parent shell waits
 
 ```text
 wait()
-*``
+```
 
 until compilation finishes.
-
--*-
-
-# Interview Questions*
-## Q1
-
-What is*the difference between fork*) and exec()?
-
-***nswer:**
-
-```text
-fork() creates a*new process.
-
-exec() replaces the *urrent process image with another *rogram.
-```
-
----
-
-## Q2
-
-Why is fo*k() followed by exec()?
-
-**Answer:**
-
-```text
-fork*) creates a child process.
-
-*xec() loads the*desired program*into that child.
-```
-
----
-
-## Q3*
-Does exec*) create a new PID?
-
-**Answer:**
-
-*``text
-No.
-
-*he process keeps the same PID.
-Onl* its program image changes.
-``*
-
----
-
-## Q4
-
-What is Copy-On*Write?
-
-**Answer:**
-
-```text
-*arent and child initially share me*ory pages.
-Memory is copied only w*en either process modifies a page.*```
-
----
 
 # Quick Revision
 
@@ -1206,17 +1142,14 @@ fork()
 exec()
     -> Replace Current Process
 
-fork() + exec()
-    -> Standard Unix Process Launch
+fork() + exec() -> Standard Unix Process Launch
 
-spawn()
-    -> Create and Start Process in One Call
+spawn() -> Create and Start Process in One Call
 
-Windows
-    -> CreateProcess()
+Windows -> CreateProcess()
 
-Linux
-    -> fork() + exec()
+Linux -> fork() + exec()
+
 ```
 
 
