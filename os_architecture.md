@@ -236,9 +236,8 @@ Hardware
 ```
 
 Each layer abstracts complexity from the layer above, making software development more portable, maintainable, and secure.
-```
 
-```
+```text
 For an Embedded systems Operating Systems can organize like this:
 Operating Systems
 │
