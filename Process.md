@@ -1088,13 +1088,16 @@ Single operation.
 # Comparison Table
 
 | Feature | fork() | exec() | spawn() |
-|----------|------------------|----------|
-| Creates new process | Yes | No | Yes |
-| Replaces program image | No | Yes |Yes |
-| New PID | Yes | No | Yes |
-| Parent survives | Yes | N/A | Yes|
-| Common in Linux | Very Common Very Common | Increasing |
-| Common in Windows | No | No | Similar via  CreateProcess |
+|----------|---------|---------|---------|
+| Creates new process | ✅ Yes | ❌ No | ✅ Yes |
+| Replaces program image | ❌ No | ✅ Yes | ✅ Yes |
+| New PID | ✅ Yes | ❌ No (same PID) | ✅ Yes |
+| Parent survives | ✅ Yes | N/A | ✅ Yes |
+| Copies Parent Address Space | ✅ Yes (Copy-On-Write) | ❌ No | ❌ No |
+| Loads New Executable | ❌ No | ✅ Yes | ✅ Yes |
+| Common in Linux | Very Common | Very Common | Increasing |
+| Common in Windows | ❌ No | ❌ No | Similar via CreateProcess() |
+| Typical Usage | Create child process | Run another program | Create & run program in one call |
 
 ---
 
@@ -1152,7 +1155,196 @@ Linux -> fork() + exec()
 
 ```
 
+# wait() - Process Synchronization in Linux
 
+After learning:
 
+```text
+fork()  -> Create Child Process
+exec()  -> Run New Program
+```
 
+the next piece is:
+
+```text
+wait()
+```
+
+which allows a parent process to wait for its child.
+
+---
+
+# Why Do We Need wait()?
+
+Suppose a shell executes:
+
+```bash
+gcc main.c
+```
+
+The shell should not immediately display another prompt.
+
+It should wait until compilation finishes.
+
+Without waiting:
+
+```text
+$ gcc main.c
+$
+```
+
+Prompt appears immediately even though compilation is still running.
+
+This would be incorrect.
+
+So the shell does:
+
+```c
+fork();
+exec();
+wait();
+```
+
+---
+
+# What is wait()?
+
+`wait()` blocks the parent process until one of its child processes exits.
+
+Prototype:
+
+```c
+pid_t wait(int *status);
+```
+
+---
+
+# Basic Example:
+
+```c
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int main()
+{
+    pid_t pid = fork();
+    if(pid == 0)
+    {
+        printf("Child Running*n");
+    }
+    else
+    {
+        wait(NULL);
+        printf("Parent Running\n");
+    }
+   return 0;
+}
+
+```
+
+Output:
+
+```text
+Child Running
+Parent Running
+```
+
+The parent waits until the child finishes.
+
+---
+
+# Timeline
+
+Without wait():
+
+```text
+Parent
+   |
+fork()
+   |
+   +--> Child
+   |
+Parent Continues
+```
+
+Execution order is unpredictable.
+
+Possible output:
+
+```text
+Parent
+Child
+```
+
+or
+
+```text
+Child
+Parent
+```
+---
+
+With wait():
+
+``text
+Parent
+   |
+fork()
+   |
+   +--> Child
+   |
+wait()
+   |
+Child Exits
+   |
+Parent Continues
+```
+
+Order becomes predictable.
+---
+
+# What Happens in Kernel?
+
+Suppose:
+
+```c
+Wait(NULL);
+```
+
+The kernel:
+
+1. Makes parent as BLOCKED.
+2. Removes parent from run queue.
+3. Schedules their processes.
+4. Child eventually exits.
+5. Kernel wakes parent.
+6. Parent resumes execution.
+
+---
+
+# Visual State Diagram
+
+```text
+Parent
+ |
+ | wait()
+ |
+ v
+
+BLOCKED
+ |
+ |--Child exits
+ |
+ v
+
+READY
+ |
+ v
+RUNNING
+```
+
+This is an important scheduler concept.
+
+---
 
