@@ -1348,3 +1348,398 @@ This is an important scheduler concept.
 
 ---
 
+# 2. Process Management
+
+Process Management is the responsibility of the Operating System for creating, scheduling, executing, and terminating processes.
+
+A **process** is an instance of a program in execution.
+
+---
+
+# Process Termination
+
+Process termination occurs when a process completes its execution or is stopped by the operating system.
+
+```text
+Process Management
+├── Process Termination
+│   ├── exit()
+│   ├── wait()
+│   └── Zombie Process
+```
+
+---
+
+## Why Processes Terminate
+
+A process may terminate because:
+
+- It completed its task.
+- It encountered an unrecoverable error.
+- It was terminated by another process.
+- It was terminated by the operating system.
+
+---
+
+# exit()
+
+## Definition
+
+`exit()` is a system/library function used by a process to terminate itself and return a status code to the operating system.
+
+Conceptually:
+
+```text
+Process
+   |
+   +--> Task Completed
+   |
+   +--> exit()
+   |
+   +--> Terminated
+```
+
+The process informs the operating system:
+
+> "My work is finished."
+
+---
+
+## Responsibilities of exit()
+
+When a process calls `exit()`:
+
+- Execution stops.
+- Open files are closed.
+- Allocated resources are released.
+- Exit status is stored.
+- Parent process can retrieve the termination status.
+
+---
+
+## Example
+
+```c
+#include <stdlib.h>
+
+int main()
+{
+    exit(0);
+}
+```
+
+---
+
+## Exit Status
+
+| Status | Meaning |
+|----------|----------|
+| 0 | Success |
+| Non-Zero | Error/Failure |
+
+Example:
+
+```c
+exit(1);
+```
+
+indicates abnormal termination.
+
+---
+
+# wait()
+
+## Definition
+
+`wait()` allows a parent process to wait for a child process to finish and collect its termination status.
+
+Conceptually:
+
+```text
+Parent
+   |
+   +---- Child
+            |
+            +---- exit()
+                    |
+                    +---- wait()
+```
+
+The parent asks:
+
+> "Has my child finished execution?"
+
+---
+
+## Why wait() Exists
+
+After a child process terminates, the parent may need:
+
+- Exit status
+- Error information
+- Resource usage statistics
+
+Before the operating system completely removes the child process.
+
+---
+
+## Example
+
+```c
+int status;
+
+wait(&status);
+```
+
+The parent blocks until the child finishes.
+
+---
+
+## Benefits of wait()
+
+- Synchronizes parent and child.
+- Retrieves child exit status.
+- Prevents zombie processes.
+
+---
+
+# Zombie Process
+
+## Definition
+
+A Zombie Process is a process that has finished execution but still has an entry in the process table because its parent has not yet collected its termination status.
+
+---
+
+## Lifecycle
+
+```text
+Running
+   |
+   +--> exit()
+            |
+            +--> Zombie
+                     |
+                     +--> wait()
+                              |
+                              +--> Removed
+```
+
+---
+
+## What Remains?
+
+The process is already dead.
+
+Removed:
+
+- Program code
+- Memory
+- CPU resources
+- Open files
+
+Retained:
+
+- PID
+- Exit status
+- Accounting information
+
+Stored in the Process Table.
+
+---
+
+## Why Zombies Exist
+
+The OS keeps minimal information so the parent can retrieve:
+
+```text
+Exit Status
+Return Code
+Execution Information
+```
+
+using `wait()`.
+
+---
+
+## Example Scenario
+
+```text
+Parent
+   |
+   +---- Child
+            |
+            +---- Finishes
+            |
+            +---- Parent ignores wait()
+            |
+            +---- Zombie
+```
+
+---
+
+## Problems with Zombies
+
+A single zombie is usually harmless.
+
+Many zombies can:
+
+- Exhaust Process Table entries.
+- Prevent creation of new processes.
+- Cause system management issues.
+
+---
+
+## Preventing Zombies
+
+### Method 1
+
+Call:
+
+```c
+wait(NULL);
+```
+
+### Method 2
+
+Call:
+
+```c
+waitpid(pid, NULL, 0);
+```
+
+### Method 3
+
+Handle:
+
+```c
+SIGCHLD
+```
+
+so terminated children are automatically reaped.
+
+---
+
+# Zombie vs Orphan Process
+
+## Zombie Process
+
+```text
+Parent Alive
+Child Dead
+```
+
+The parent has not collected the child's exit status.
+
+---
+
+## Orphan Process
+
+```text
+Parent Dead
+Child Alive
+```
+
+The child is adopted by:
+
+```text
+init (PID 1)
+```
+
+or
+
+```text
+systemd
+```
+
+on modern Linux systems.
+
+---
+
+## Comparison
+
+| Feature | Zombie | Orphan |
+|----------|----------|----------|
+| Child Alive | No | Yes |
+| Parent Alive | Yes | No |
+| Consumes CPU | No | Possibly |
+| Needs wait() | Yes | No |
+| Removed By | Parent wait() | init/systemd |
+
+---
+
+# Key Operating System Concepts
+
+## exit()
+
+```text
+Purpose:
+Terminate the current process.
+
+Output:
+Exit status returned to parent process.
+```
+
+---
+
+## wait()
+
+```text
+Purpose:
+Allow parent to collect child termination status.
+
+Benefit:
+Prevents Zombie Processes.
+```
+
+---
+
+## Zombie Process
+
+```text
+Definition:
+A terminated child process whose parent
+has not yet called wait().
+
+State:
+Dead but still present in Process Table.
+```
+
+---
+
+# Quick Revision
+
+```text
+exit()
+├─ Terminates process
+├─ Releases resources
+└─ Returns exit status
+
+wait()
+├─ Parent waits for child
+├─ Collects exit information
+└─ Removes zombie entry
+
+Zombie Process
+├─ Child terminated
+├─ Parent didn't call wait()
+├─ No CPU usage
+└─ Process table entry remains
+
+Orphan Process
+├─ Parent terminated
+├─ Child still running
+└─ Adopted by init/systemd
+```
+
+## Memory Trick
+
+```text
+exit()  = "I'm Done"
+
+wait()  = "Collect My Result"
+
+Zombie  = "Dead but Not Cleaned Up"
+
+Orphan  = "Alive but No Parent"
+```
