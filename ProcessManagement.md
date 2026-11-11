@@ -1743,3 +1743,146 @@ Zombie  = "Dead but Not Cleaned Up"
 
 Orphan  = "Alive but No Parent"
 ```
+# Process Hierarchy
+
+Processes are organized in a parent-child relationship.
+
+```text
+Process Management
+└── Process Hierarchy
+    ├── Parent
+    ├── Child
+    └── Orphan Process
+```
+
+---
+
+## Parent Process
+
+**Definition:**  
+A process that creates another process.
+
+```text
+Parent
+   │
+   └── Child
+```
+
+### Key Points
+
+- Creates child processes.
+- Can monitor child execution.
+- Can collect child status using `wait()`.
+
+---
+
+## Child Process
+
+**Definition:**  
+A process created by another process.
+
+### Key Points
+
+- Has its own PID.
+- Stores Parent PID (PPID).
+- Executes independently.
+- May create additional child processes.
+
+---
+
+## Orphan Process
+
+**Definition:**  
+A child process whose parent has terminated before the child.
+
+```text
+Parent
+   │
+   └── Child
+```
+
+After parent exits:
+
+```text
+Parent (Terminated)
+
+Child (Still Running)
+```
+
+The child becomes an **Orphan Process**.
+
+---
+
+### What Happens to an Orphan?
+
+The operating system automatically assigns the orphan to:
+
+```text
+init (PID 1)
+```
+
+or
+
+```text
+systemd
+```
+
+on modern Linux systems.
+
+```text
+systemd/init
+      │
+      └── Orphan Process
+```
+
+---
+
+### Key Points
+
+- Child process is still running.
+- Parent process has terminated.
+- Automatically adopted by init/systemd.
+- Usually not a problem for the operating system.
+
+---
+
+## Orphan vs Zombie
+
+| Feature | Orphan | Zombie |
+|----------|---------|---------|
+| Parent Alive | No | Yes |
+| Child Alive | Yes | No |
+| Running Code | Yes | No |
+| Uses CPU | Yes (if scheduled) | No |
+| Adopted by init/systemd | Yes | No |
+
+---
+
+## Quick Revision
+
+```text
+Parent
+├─ Creates child processes
+
+Child
+├─ Created by parent
+└─ Has its own PID
+
+Orphan Process
+├─ Parent terminated
+├─ Child still running
+└─ Adopted by init/systemd
+
+Zombie Process
+├─ Parent alive
+├─ Child terminated
+└─ Waiting for wait()
+```
+
+### Memory Trick
+
+```text
+Orphan = Alive Child, Dead Parent
+
+Zombie = Dead Child, Alive Parent
+```
